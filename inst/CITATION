@@ -1,0 +1,11 @@
+w <- person(given = "Wen", family = "Chen", email = "Wen.Chen@agr.gc.ca", 
+            role = "aut")
+j <- person(given = "Joshua", family = "Simpson", email = "jwvsimps@uwaterloo.ca",
+            role = "aut")
+
+authors <- personList(w, j)
+
+bibentry(bibtype = "Misc", author = authors,
+         title = "RAM: R Package for Amplicon-Based Metagenomics",
+         year = "2014",
+         institution = "Agriculture and Agri-Food Canada / Agriculture et Agroalimentaire Canada")
