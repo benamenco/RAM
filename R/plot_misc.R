@@ -117,9 +117,9 @@
     geom_boxplot(outlier.colour=NA) +
     scale_fill_manual(values=colours) +
     scale_y_continuous(labels = percent_format()) +
-    xlab("OTU") + ylab("Relative Abundance") + 
+    xlab("Taxon") + ylab("Relative Abundance") + 
     ggtitle(top.title) +
-    theme(axis.text.x = element_text(angle=90),
+    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
           legend.position="none",
           panel.background = element_rect(fill="grey90"),
           panel.grid.major.x = element_line(colour="white"),
@@ -443,7 +443,7 @@ group.abundance <- function(otu1, otu2=NULL, rank,
     #coord_flip() +
     xlab("Samples") +
     ggtitle(title) +
-    theme(legend.position="bottom", axis.text.x = element_text(angle=90),
+    theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
           panel.grid.major.x = element_blank())
   
   if (!count) {
@@ -460,7 +460,7 @@ group.abundance <- function(otu1, otu2=NULL, rank,
   if (bw) { # for black/white plots
     warning("the ggplot2 package used to create this graph cannot handle patterning for bar plots; greyscale shading is being used.")
     p <- p + scale_fill_grey(guide = guide_legend(direction="horizontal", ncol=5)) +
-      theme_bw() + theme(legend.position="bottom", axis.text.x = element_text(angle=90))
+      theme_bw() + theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
     
   } else { # use actual colours
     
@@ -489,7 +489,7 @@ group.abundance <- function(otu1, otu2=NULL, rank,
 
 pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
                       dist.method="morisita", sample.labels=TRUE,
-                      top=20, ellipse=FALSE, file=NULL, ext=NULL, 
+                      top=20, ellipse=FALSE, main=NULL, file=NULL, ext=NULL,
                       height=8, width=10, ggplot2=TRUE, bw=FALSE) {
   
   valid.OTU(data)
@@ -575,6 +575,11 @@ pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
   dists <- vegdist(abund, method=dist.method)
   
   k.max <- dim(otu.t)[1] - 1
+  
+ # if (!require("labdsv")) {
+ #     stop("package 'labdsv' is required to use this function")
+ # }
+  
   pcoa <- suppressWarnings(pco(dists, k.max))
   
   # if we don't get at least two axes of ordination, throw error
@@ -586,15 +591,15 @@ pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
   
   if (ggplot2) {
     .pcoa.ggplot2(abund, pcoa, rank, sp.scores, meta.factors, sample.labels, 
-                  top, ellipse, file, ext, height, width, bw)
+                  top, ellipse, main, file, ext, height, width, bw)
   } else {
     .pcoa.base(abund, pcoa, rank, sp.scores, meta.factors, sample.labels, top, 
-               ellipse, file, ext, height, width, bw)
+               ellipse, main, file, ext, height, width, bw)
   }
 }
 
 .pcoa.ggplot2 <- function(abund, pcoa, rank, sp.scores, meta.factors, 
-                          sample.labels, top, ellipse, file, ext, height, width, 
+                          sample.labels, top, ellipse, main, file, ext, height, width,
                           bw) {
   
   num.facs <- length(meta.factors)
@@ -676,9 +681,14 @@ pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
   x.lab <- paste0("Axis I (", round(100 * pcoa$eig[1] / sum(pcoa$eig), digits=2), "%)")
   y.lab <- paste0("Axis II (", round(100 * pcoa$eig[2] / sum(pcoa$eig), digits=2), "%)")
   
-  main.title <- paste("PCoA for Top", top, "Taxon Groups at", 
-                      .get.rank(.get.rank.ind(rank), pretty=TRUE),
-                      "Level")
+  #main.title <- paste("PCoA for Top", top, "Taxon Groups at",
+  #                    .get.rank(.get.rank.ind(rank), pretty=TRUE),
+  #                     "Level")
+  if (is.null(main)) {
+        main.title = ""
+  } else {
+      main.title = main
+  }
   
   # add titles
   p <- p + ggtitle(main.title) + xlab(x.lab) + ylab(y.lab)
@@ -698,7 +708,7 @@ pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
 }
 
 .pcoa.base <- function(abund, pcoa, rank, sp.scores, meta.factors, 
-                       sample.labels, top, ellipse, file, ext, height, width, 
+                       sample.labels, top, ellipse, main, file, ext, height, width,
                        bw) {
   
   .valid.plot.settings(file, ext)
@@ -724,9 +734,15 @@ pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
   # get label names
   x.lab <- paste0("Axis I (", round(100 * pcoa$eig[1] / sum(pcoa$eig), digits=2), "%)")
   y.lab <- paste0("Axis II (", round(100 * pcoa$eig[2] / sum(pcoa$eig), digits=2), "%)")
-  main.title <- paste("PCoA for Top", top, "Taxon Groups at", 
-                      .get.rank(.get.rank.ind(rank), pretty=TRUE),
-                      "Level")
+  # main.title <- paste("PCoA for Top", top, "Taxon Groups at",
+  #                    .get.rank(.get.rank.ind(rank), pretty=TRUE),
+  #                    "Level")
+  
+  if (is.null(main)) {
+      main.title = ""
+  } else {
+      main.title = main
+  }
   
   plot.args <- list(pcoa$points[ , 1:2], xlab=x.lab, ylab=y.lab, main=main.title,
                     lwd=4, cex=2.5)
@@ -1064,6 +1080,16 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
                             thresholds = c(A=0.85, B=0.8, stat=0.8, p.value=0.05),
                             labels=c("ITS1", "ITS2"), file=NULL, ext=NULL,
                             height=12, width=12) {
+  
+  # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
+  # but I think returning an explanatory error message is worthwhile
+  
+  if (require("indicspecies")) {
+      indicspecies::multipatt
+  } else {
+    stop("package 'indicspecies' is required to use this function: try 'install.packages('indicspecies')'.")
+  }
+  
   # we create some temporary text files in this function, so clean up:
   # (this removes all files containing mp_summary in their name in the R temp dir)
   on.exit(unlink(paste0(tempdir(), "/mp_summary*")))
@@ -1082,13 +1108,13 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
   .valid.labels(num.otus, labels)
   
   meta.factor <- .valid.factors(meta, factor, min.factors = 1, max.factors = 1)
-  
+
   if (!is.numeric(thresholds) || length(thresholds) != 4L) {
     stop("thresholds must be a numeric vector of length four (see ?indicators.plot for details).")
   }
   
   meta.name <- names(meta.factor)
-  
+   
   # to store the data we're about to generate
   rows <- vector(length=num.otus, mode="list")
   
@@ -1100,8 +1126,8 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
     abund <- tax.abund(otu, rank=rank)
     abund.stand <- decostand(abund, method="total")
     
-    mp <- multipatt(abund.stand, meta.factor[[1]], control=how(nperm=999))
-    
+    mp <- indicspecies::multipatt(abund.stand, meta.factor[[1]], control=how(nperm=999))
+     
     # write the summary of the multi-level analysis to a temp file, which we read
     tempfilename <- tempfile("mp_summary", fileext=".txt")
     sink(file=tempfilename)
@@ -1109,6 +1135,7 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
     sink()
     
     indicators <- readLines(tempfilename)
+    
     # the summary contains some human-friendly non-data lines we need to strip
     # this regex keeps only lines that have {number number number number},
     # since there are four numerical columns in the data (and none elsewhere)
@@ -1120,6 +1147,7 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
     }
     
     indicators <- indicators[matches]
+    
     # split the rows at all whitespace, convert to dataframe
     indicators.df <- data.frame(Group=character(), A=numeric(), B=numeric(),
                                 stat=numeric(), p.value=numeric(),
@@ -1136,7 +1164,7 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
     for (i in 2:5) {
       indicators.df[ , i] <- as.numeric(indicators.df[ , i])
     }
-    
+   
     # get names of all taxon groups above the given thresholds
     keep <- indicators.df[with(indicators.df, 
                                A >= thresholds[1] & B >= thresholds[2] & 
@@ -1152,6 +1180,7 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
                                  meta=meta.factor,
                                  Region=rep(labels[index], times=dim(abund.stand)[1]), 
                                  abund.stand[ , keep, drop=FALSE])
+    
     # melt it & store the result
     rows[[index]] <- melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
                                                     variable.name="Indicator",
@@ -1170,7 +1199,7 @@ group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
                   scales="free_x", space="free_x") +
        scale_fill_brewer(palette="Set3") +
        ylab("Relative Abundance") +
-       theme(axis.text.x = element_text(angle=90), legend.position="bottom")
+       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), legend.position="bottom")
   
   if (save) {
     .ggsave.helper(file, ext, width, height, plot=p)

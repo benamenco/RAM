@@ -27,12 +27,12 @@ the index to use for calculations; partial match to "\code{simpson}" or
 }
 }
 \details{
-The \code{otu2} argument is optional; if it is not specified, the calculations
-will be done for only the \code{otu1} argument.
+The \code{otu2} argument is optional; if it is not specified, the
+ calculations will be done for only the \code{otu1} argument.
 
-For the following sections, \eqn{S}{S} represents the number of species, 
-\eqn{\lambda}{\lambda} represents the Simpson index, and \eqn{H'}{H'} represents
-the Shannon index.
+For the following sections, \eqn{S}{S} represents the number of 
+species, \eqn{\lambda}{\lambda} represents the Simpson index, and 
+\eqn{H'}{H'} represents the Shannon index.
 
 The formulas for the true diversity of the indices are as follows:
 
@@ -49,12 +49,12 @@ The formulas for the evenness of the indices are as follows:
 }
 }
 \value{
-Both functions return a numeric matrix, where the rows are the given OTUs, and
-the columns are the samples.
+Both functions return a numeric matrix, where the rows are the given 
+OTUs, and the columns are the samples.
 }
 \note{
-Credit goes to package \code{vegan} for the partial argument matching (see
-References).
+Credit goes to package \code{vegan} for the partial argument matching 
+(see References).
 }
 \references{
 Jari Oksanen, F. Guillaume Blanchet, Roeland Kindt, Pierre Legendre, 
@@ -63,14 +63,14 @@ Peter R. Minchin, R. B. O'Hara, Gavin L. Simpson,
   vegan: Community Ecology Package. R package version
   2.0-10. http://CRAN.R-project.org/package=vegan
   
-Diversity index. (2014, May 7). In Wikipedia, The Free Encyclopedia. Retrieved
-14:57, May 28, 2014, from
+Diversity index. (2014, May 7). In Wikipedia, The Free Encyclopedia. 
+Retrieved 14:57, May 28, 2014, from
 http://en.wikipedia.org/w/index.php?title=Diversity_index&oldid=607510424
   
-Blackwood, C. B., Hudleston, D., Zak, D. R., & Buyer, J. S. (2007). Interpreting
-ecological diversity indices applied to terminal restriction fragment length
-polymorphism data: insights from simulated microbial communities. Applied and
-Environmental Microbiology, 73(16), 5276-5283.
+Blackwood, C. B., Hudleston, D., Zak, D. R., & Buyer, J. S. (2007). 
+Interpreting ecological diversity indices applied to terminal restriction 
+fragment length polymorphism data: insights from simulated microbial 
+communities. Applied and Environmental Microbiology, 73(16), 5276-5283.
 }
 \author{
 Wen Chen and Joshua Simpson.

@@ -5,11 +5,11 @@
 Aggregate OTU Data Based on Taxonomy
 }
 \description{
-This function consumes OTU table(s) and (optionally)  a taxonomic rank, then
-extracts the classification of each OTU at the given taxonomic rank, groups by
-classification at the given rank, removes all groups with only 0 counts,
-optionally removes all unclassified groups, sorts groups based on abundance, and
-then returns the
+This function consumes OTU table(s) and (optionally)  a taxonomic 
+rank, then extracts the classification of each OTU at the given 
+taxonomic rank, groups by classification at the given rank, removes 
+all groups with only 0 counts, optionally removes all unclassified 
+groups, sorts groups based on abundance, and then returns the
 transpose.
 }
 \usage{
@@ -25,27 +25,28 @@ the first OTU table to be used.
 the second OTU table to be used.
 }
   \item{rank}{
-a character vector representing a rank. Must be in one of three specific formats
-(see ?RAM.rank.formatting for help). If omitted, the function will repeat for
-all seven major taxonomic ranks.
+a character vector representing a rank. Must be in one of three 
+specific formats (see ?RAM.rank.formatting for help). If omitted, 
+the function will repeat for all seven major taxonomic ranks.
 }
   \item{drop.unclassified}{
-logical. Should OTUs labelled "unclassified" or missing classification at the
-given taxonomic rank be excluded?
+logical. Determine whether or not the OTUs labelled "unclassified" 
+or missing classification at the given taxonomic rank should be 
+excluded.
 }
   \item{top}{
-the number of groups to select, starting with the most abundant. If \code{NULL},
-all are selected.
+the number of groups to select, starting with the most abundant. 
+If \code{NULL}, all are selected.
 }
   \item{count}{
-logical. Should the actual count of each OTU be shown, or should the relative
-abundances be shown?
+logical. Should the actual count of each OTU be shown, or should 
+the relative abundances be shown?
 }
   \item{mode}{
 a character vector, one of "\code{percent}" or "\code{number}". If
-\code{number}, then \code{top} many groups will be selected. If \code{percent},
-then all groups with relative abundance in at least one sample above \code{top}
-will be selected.
+\code{number}, then \code{top} many groups will be selected. If 
+\code{percent}, then all groups with relative abundance in at least 
+one sample above \code{top} will be selected.
 
 }
 }
@@ -53,28 +54,29 @@ will be selected.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-The value returned by this function may become nested lists, so for convenience,
-any nested lists have been given descriptive items names to make accessing its
-elements simple (see Examples).
+The value returned by this function may become nested lists, so for 
+convenience, any nested lists have been given descriptive items 
+names to make accessing its elements simple (see Examples).
 \itemize{
 \item If \code{otu2} is given:
   \itemize{
-    \item If \code{rank} is given: a list containing two data frames (otu1 and
-	  otu2 aggregated at the given rank).
+    \item If \code{rank} is given: a list containing two data frames 
+          (otu1 and otu2 aggregated at the given rank).
     
-    \item If \code{rank} is not given: a list containing two lists. The first
-	  sublist represents \code{otu1}, the second \code{otu2}. The sublists
-	  contain seven data frames, the aggregation of the data at each
-	  taxonomic rank (see Examples).
+    \item If \code{rank} is not given: a list containing two lists. 
+          The first sublist represents \code{otu1}, the second 
+          \code{otu2}. The sublists contain seven data frames, the 
+          aggregation of the data at each taxonomic rank 
+          (see Examples).
 		      }
 
 \item If \code{otu2} is not given:
   \itemize{
-    \item If \code{rank} is given: a single data frame (otu1 aggregated at the
-	  given rank).
+    \item If \code{rank} is given: a single data frame (otu1 
+          aggregated at the given rank).
     
-    \item If \code{rank} is not given: a list containing seven data frames (otu1
-	  aggregated at each taxonomic rank).
+    \item If \code{rank} is not given: a list containing 
+          seven data frames (otu1 aggregated at each taxonomic rank).
 	    }
 }
 }

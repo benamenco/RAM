@@ -1,0 +1,116 @@
+\name{NEWS}
+\title{RAM News}
+\encoding{UTF-8}
+
+\section{Changes in version 1.1.0}{
+
+  \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release with new functions and features. In
+       the same we also fix some issues of plot functions.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item Function \code{tax.split} previously used a function 
+      \code{splitstackshape::concat.split}, which is deprecated. Replaced 
+      with new function in RAM \code{split.col}.  
+
+     \item Function \code{group.indicators} fix the bug caused by previous
+      version of tax.split, which call function 
+      \code{splitstackshape::concat.split}, which is not required any more.   
+
+      \item Function \code{tax.abund} failed to remove unclassified 
+      taxon groups in defined blacklist when drop.unclassified is
+      set as TRUE. 
+
+      \item Function \code{group.abundance} needs \code{tax.abund} when 
+      plot relative abundance of top taxon groups at each ranks. Now it 
+      correctly remove unclassified taxon groups when drop.unclassified 
+      option is set TRUE.
+      
+      \item \code{tax.fill} failed to recognize unclassified 
+      taxon groups in defined blacklist and replace them with the OTUs 
+      lowest comman ancestor. 
+
+      \item \code{...} 
+    
+    }
+  } % bug fixes
+
+
+  \subsection{NEW FUNCTIONS}{
+    \itemize{
+
+      \item Function \code{OTU.diversity} calculates most used 
+      diversity indices for each samples based on OTU tables.
+
+      \item Function \code{core.OTU} summarizes most prevelant otus.
+
+      \item Function \code{core.Taxa} summarizes most prevelant taxon 
+      groups.
+
+      \item \code{group.OTU} plot function for the distribution of 
+      selected otus.
+
+      \item \code{filter.OTU} function to subset OTUs by either total 
+      count or relative abundance.
+     
+      \item \code{OTU.recap} summarizes classified OTUs at each taxonomic
+      ranks.
+     
+      \item \code{.get.rank.name} internal function to generate the name 
+      of a given taxonomic rank.
+    
+      \item \code{LCA.OTU} function to obtain LCA for each otu. Unclassified 
+      taxa are removed and the lowest rank that an otu can be assigned to is 
+      returned. 
+      
+      \item \code{correlation} plot function to display correlation 
+       coefficient (or covariance) among taxa at a give rank and / or 
+      numeric variables of metadata. 
+            
+      \item \code{col.splitup} function to split a column of a data frame by 
+      predefined separator.
+
+    }
+  } % new functions
+
+%  \subsection{NEW FEATURES}{
+%    \itemize{
+
+%      \item 
+
+%      \item 
+
+%      \item 
+
+%    }
+
+%  } % new features
+  
+%  \subsection{INSTALLATION AND BUILDING}{
+%    \itemize{
+
+%      \item 
+      
+    }
+  } % installation and building
+  
+%  \subsection{DEPRECATED}{
+
+%    \itemize{
+
+%      \item 
+
+%    }   
+%  } % deprecated
+
+} % version 1.1.0
+

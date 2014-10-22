@@ -5,7 +5,7 @@ get.rank <- function(otu1, otu2=NULL, rank=NULL) {
   
   tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
   
-  # if given both otu1 and otu2, call get.rank for both
+  # if given both otu and otu2, call get.rank for both
   if (!single.otu) {
     
     output <- list()
@@ -14,13 +14,13 @@ get.rank <- function(otu1, otu2=NULL, rank=NULL) {
     # OTU argument (which is named otu2)
     output$otu2 <- get.rank(otu1=otu2, rank=rank)
     
-    if (single.rank) {
-      names(output$otu1) <- .get.rank(.get.rank.ind(rank))
-      names(output$otu2) <- .get.rank(.get.rank.ind(rank))
-    } else {
-      names(output$otu1) <- tax.classes
-      names(output$otu2) <- tax.classes
-    }
+   # if (single.rank) {
+   #   names(output)$otu1 <- .get.rank(.get.rank.ind(rank))
+   #   names(output$otu2) <- .get.rank(.get.rank.ind(rank))
+   # } else {
+   #   names(output$otu1) <- tax.classes
+   #   names(output$otu2) <- tax.classes
+   # }
     
     return(output)
   }
@@ -39,7 +39,7 @@ get.rank <- function(otu1, otu2=NULL, rank=NULL) {
     
     if (dim(output)[1] == 0) {
       warning(paste("no OTUs classified at the", .get.rank(.get.rank.ind(rank)),
-                    "level."))
+        "level."))
     }
     return(output)
     
@@ -61,7 +61,7 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
   single.rank <- !is.null(rank)
   tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
   
-  # if given otu1 and otu2, call tax.split for both
+  # if given otu and otu2, call tax.split for both
   if (!single.otu) {
     
     output <- list()
@@ -76,10 +76,11 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
     # get the index for rank (also does data validation for rank)
     .valid.rank(rank)
     tax.ind <- .get.rank.ind(rank)
-  }
+  } 
   
   # split OTU table taxonomy information into individual columns
-  otu.split <- concat.split(otu1, split.col="taxonomy", sep=";", drop=TRUE)
+  otu1.split <- suppressWarnings(col.splitup(otu1, col="taxonomy", sep="; ", 
+                   max=length(tax.classes), names=tax.classes, drop=TRUE))
   
   # columns from 1 to max contain the numeric data, the other taxonomic
   max <- dim(otu1)[2] - 1
@@ -88,25 +89,23 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
   # at that level), add empty column
   
   # while we have less columns than we should...
-  while (dim(otu.split)[2] < max + length(tax.classes)) {
+  #while (dim(otu1.split)[2] < max + length(tax.classes)) {
     # ...add a column filled with empty strings
-    otu.split <- cbind(otu.split, rep("", times=dim(otu.split)[1]))
-  }
+  #  otu1.split <- cbind(otu1.split, rep("", times=dim(otu1.split)[1]))
+  #}
   
-  # rename the columns
-  names(otu.split)[-(1:max)] <- tax.classes
   # strip the 'formatting' bits of taxonomic info
-  otu.split[ ,-(1:max)] <- gsub("k__|p__|c__|o__|f__|g__|s__|;", "", 
-                                as.matrix(otu.split[ ,-(1:max)]))
+  otu1.split[ ,-(1:max)] <- gsub("k__|p__|c__|o__|f__|g__|s__|;", "", 
+        as.matrix(otu1.split[ ,-(1:max)]))
   
   if (single.rank) {
     # add the single taxonomic column to the numeric data, return that data frame
-    return(otu.split[ , names(otu.split) %in% c(names(otu1)[1:max], tax.classes[tax.ind])])
+    return(otu1.split[ , names(otu1.split) %in% c(names(otu1)[1:max], tax.classes[tax.ind])])
     
   } else {
     # set up list for output
-    otu.taxa <- vector("list", length(tax.classes))
-    names(otu.taxa) <- tax.classes 
+    otu1.taxa <- vector("list", length(tax.classes))
+    names(otu1.taxa) <- tax.classes 
     
     for (i in 1:length(tax.classes)) {
       # creating a list of data frames is surprisingly difficult in R;
@@ -114,16 +113,16 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
       # of the first data frame in its entirety, followed be the individual columns
       # of the other data frames. Instead we wrap each data frame in a list itself 
       # before we add it, then we can access them with [[]]
-      otu.taxa[i] <- list(otu.split[ , names(otu.split) %in% c(names(otu1)[1:max],
-                                                               tax.classes[i])])
+      otu1.taxa[i] <- list(otu1.split[ , names(otu1.split) %in% c(names(otu1)[1:max],
+                   tax.classes[i])])
     }
     
-    return(otu.taxa)
+    return(otu1.taxa)
   }
 }
 
 tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE, 
-                      top=NULL, count=TRUE, mode="number") {
+          top=NULL, count=TRUE, mode="number") {
   
   single.otu <- is.null(otu2)
   valid.OTU(otu1, otu2)
@@ -144,16 +143,16 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE,
     stop("argument 'mode' must be one of 'number' or 'percent'.")
   }
   
-  # if given otu1 and otu2, call tax.abund for both
+  # if given otu and otu2, call tax.abund for both
   if (!single.otu) {
     
     drop <- drop.unclassified
     output <- list()
     
     output$otu1 <- tax.abund(otu1, rank=rank, drop.unclassified=drop, top=top,
-                             count=count, mode=mode)
+         count=count, mode=mode)
     output$otu2 <- tax.abund(otu2, rank=rank, drop.unclassified=drop, top=top,
-                             count=count, mode=mode)
+         count=count, mode=mode)
     
     return(output)
   }
@@ -172,7 +171,7 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE,
     names(tax.list[[i]])[dim(tax.list[[i]])[2]] <- "taxonomy" 
     # aggregate the otu table by taxonomy rank names 
     tax.list[[i]] = aggregate(tax.list[[i]][ , -dim(tax.list[[i]])[2]],  
-                              by = list(tax.list[[i]]$taxonomy), FUN = .sumcol) 
+          by = list(tax.list[[i]]$taxonomy), FUN = .sumcol) 
     # change row names to header provided by aggregate
     rownames(tax.list[[i]]) <- tax.list[[i]][ , 1] 
     # remove first column (that information is now in the row names)
@@ -187,7 +186,7 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE,
     
     # order the table by column sums
     tax.list[[i]] <- tax.list[[i]][ , order(colSums(tax.list[[i]]), 
-                                            decreasing = TRUE), drop=FALSE] 
+            decreasing = TRUE), drop=FALSE] 
     
     # remove all zero entries
     tax.list[[i]] <- tax.list[[i]][ , colSums(tax.list[[i]]) > 0, drop=FALSE]
@@ -195,22 +194,22 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE,
     # rename the "V1" column
     if (!single.rank) {
       names(tax.list[[i]])[names(tax.list[[i]]) == "V1"] <- 
-        paste("unclassified_below_", .get.rank(i - 1), sep="")
+    paste("unclassified_below_", .get.rank(i - 1), sep="")
     } else {
       # if we are only processing one element, we cannot use the i index 
       # to get the correct rank
       names(tax.list[[i]])[names(tax.list[[i]]) == "V1"] <- 
-        paste("unclassified_below_", .get.rank(.get.rank.ind(rank) - 1), sep="")
+    paste("unclassified_below_", .get.rank(.get.rank.ind(rank) - 1), sep="")
     }
     
     # remove unclassified columns
     if (drop.unclassified) {
       # this selects all columns NOT containing in the blacklist
-      remove.pat <- paste0(.blacklist(.get.rank(i)), "|no_taxonomy")
+      remove.pat <- gsub(.get.rank.pat(.get.rank(i)), "", paste0(.blacklist(.get.rank(i)), "|no_taxonomy"))
       
       tax.list[[i]] <- tax.list[[i]][ , !grepl(remove.pat, names(tax.list[[i]]),
-                                               ignore.case=TRUE), 
-                                     drop=FALSE]
+               ignore.case=TRUE), 
+             drop=FALSE]
     }
     
     # keep only the 'top' most abundant groups, where top is user-given 
@@ -303,7 +302,7 @@ tax.fill <- function(data, downstream=TRUE) {
     range <- 7:1
   }
   
-  taxonomy <- str_split(data$taxonomy, "; ")
+  taxonomy <- strsplit(data$taxonomy, "; ")
   taxonomy.length <- length(taxonomy)
   
   # initialize the vector of classified names
@@ -314,29 +313,32 @@ tax.fill <- function(data, downstream=TRUE) {
   for (i in range) {
     # this selects the i-th element of every list and returns a character vector
     current.groups <- unlist(lapply(taxonomy, FUN="[", i))
+
     # any entries that are TRUE (i.e. match blacklist) need to be replaced
     # we add that pattern to match any group prefix with no name 
     # (since we split on semicolons the rank argument in .blacklist won't work)
-    blacklist <- paste0(.blacklist(), "|[kpcofgs]__$")
+    blacklist <- paste0(paste(.blacklist(), collapse="|"), "|[kpcofgs]__$", sep="")
     
     replace <- is.na(current.groups) | grepl(blacklist, current.groups,
-                                             ignore.case = TRUE)
+             ignore.case = TRUE)
     
     num.groups <- length(current.groups)
+
     for (j in 1:num.groups) {
       
       # if we need to replace the classification, use last good name
       if (replace[j]) {
-        
-        new.name <- paste0(.get.rank.pat(.get.rank(i)), "belongs_to_",
-                           gsub("__", "_", classified.names[j]))
-        
-        new.taxonomy[[j]][i] <- new.name
+    
+          new.name <- paste0(.get.rank.pat(.get.rank(i)), "belongs_to_",
+           gsub("__", "_", classified.names[j]))
+    
+          new.taxonomy[[j]][i] <- new.name
       } else { # if the classification is good, store it
-        classified.names[j] <- current.groups[j]
-        new.taxonomy[[j]][i] <- classified.names[j]
+          classified.names[j] <- current.groups[j]
+          new.taxonomy[[j]][i] <- classified.names[j]
       }
     }
+
   }
   
   new.taxonomy <- lapply(new.taxonomy, FUN=paste, collapse="; ")
@@ -344,5 +346,165 @@ tax.fill <- function(data, downstream=TRUE) {
   # return a new data frame with the updated taxonomy
   # (do not mutate the old data frame)
   data.frame(data[ ,-dim(data)[2], drop=FALSE], taxonomy=unlist(new.taxonomy),
-             stringsAsFactors = FALSE)
+     stringsAsFactors = FALSE)
 }
+
+
+LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
+
+  valid.OTU(otu)
+  tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+
+  # split taxonomy column by ;
+  otu.split <- suppressWarnings(col.splitup(otu, col="taxonomy", sep="; ", 
+                 max=length(tax.classes), names=tax.classes, drop=TRUE))
+  # otu table column#  
+  max <- ncol(otu) - 1
+  
+ # strip the 'formatting' bits of taxonomic info
+ blacklist<-vector()
+ for ( i in c("k__", "p__", "c__", "o__", "f__", "g__", "s__") ) {
+     blacklist<-c(blacklist,paste(i, .blacklist(), sep=""))
+ }
+ blacklist <- paste(blacklist, collapse="|")
+ blacklist <- paste(blacklist, "|k__|p__|c__|o__|f__|g__|s__|;", sep="")
+
+# remove entries matched blacklist (unclassified taxa)
+  otu.split[ ,-(1:max)] <- gsub(blacklist, "", 
+        as.matrix(otu.split[ ,-(1:max)]))
+
+ otu.split[ ,-(1:max)] <- gsub("^[ ]+", "", 
+        as.matrix(otu.split[ ,-(1:max)]), perl=TRUE)
+
+  # obtain LCA of each OTU
+  # replace "" to NA
+  otu.split[ otu.split == "" ] <- NA
+  
+
+  # whether or not strip formatting: e.g. g__
+  otu.split$LCA <- apply(otu.split, 1, function(x) tail(unlist(x [ which(!is.na(x)) ]), n=1))
+
+  if ( strip.format ) {
+      otu.split$LCA <- otu.split$LCA
+  } else {
+      n.r <- nrow(otu.split)
+      n.c <- ncol(otu.split)
+      for ( i in 1:n.r ) {
+           num <- which( otu.split[i, 1:(n.c-1)] == otu.split$LCA[i])
+           pat <- .get.rank.pat(names(otu.split)[num])
+           otu.split$LCA[i] <- paste(pat, otu.split$LCA[i], sep="")
+        }
+    }
+  
+  # whether or not remove taxonomy split ranks
+  output <- otu.split[, setdiff(colnames(otu.split),"taxonomy")]
+  if ( drop ) { 
+      # keep only LCA for taxonomy info
+      output <- cbind(otu[, 1:max], output$LCA)
+      names(output)[ncol(output)] <- "LCA"
+  } else { 
+      output <- cbind(output, otu$taxonomy)
+      names(output)[ncol(output)] <- "taxonomy"
+  }
+  return(output)
+}
+
+
+col.splitup <- function(df, col="", sep="", max=NULL, names=NULL, drop=TRUE) { 
+    # validate all inputs
+    if ( sep == "" ) {
+        stop(paste("\n", "    Error: separator ?  check ?col.splitup  ", "\n", sep=""))
+    }
+    if ( col == "" )  {
+       stop(paste("\n", "    Error: column to split? check ?col.splitup  ", "\n", sep=""))
+    }
+    if ( !(col %in% names(df)) ) {
+        stop(paste("\n", "    Error: column to be split is not in the dataframe", "\n", sep=""))
+    }  
+    
+    # col position in df
+    if ( col %in% names(df) ) {
+        num.col <- which( names(df) %in% col )
+    }
+    
+    # split the column to list;
+    list <- strsplit(df[[col]], sep, fixed=FALSE); 
+    vec <- vector();
+
+    # determine max number of split columns to be remained in output
+    for (i in 1:length(list) ) {
+      vec<-c( vec, length(list[[i]]) );
+    }
+
+    def.max <- max(c(max, length(names)))
+    maximum <- c( max, max(vec), length(names) )
+    max <- max(maximum)
+    
+    if ( max(vec) > def.max ) {
+        warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
+                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
+                  "    Will KEEP all ", max(vec), " and IGNORE user defined ",  def.max, 
+                 " columns", sep=""))
+     } else if ( max(vec) < def.max )  {
+            warning(paste("\n", "    ", col, " can be split to: ", max(vec), 
+                " columns; ", "\n", "    required to be split to: ", max, 
+                " columns; ", "\n", "    column names provided: ", length(names), "\n", 
+                "    Will fill empty strings in the additional ", def.max-max(vec), 
+               " column(s)", sep=""))
+      } else {
+        warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
+                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
+                  "    ", col, " will be split to: ", max(vec), " columns", sep=""))
+     }
+   
+
+    for ( i in 1:length(list) ) {
+      # since max is equal to or larger than length(list[[i]]) as defined by section above
+      if ( length(list[[i]]) < max ) {
+        x=rep( "", max-length(list[[i]]) );
+        list[[i]] <- c(list[[i]], x)
+      } else {
+        list[[i]] <- list[[i]]
+      }
+    } 
+    
+    # rbind to form a data frame of split columns    
+    new<-as.data.frame( do.call("rbind", list) )
+    
+    # names of new columns
+    if ( is.null(names) ) {
+       new.name <- colnames(new)
+    } else {
+      if ( length(names) == max ) {
+        new.name <- names
+      } else if ( length(names) < max ) {
+        warning(paste("\n", "    ", col, " being split to: ", max, 
+                " columns;", "\n", "    column names provided: ", length(names), "; ", "\n",
+                "    will only change the first ", max, " of split columns", sep=""))
+        new.name <- c(names, colnames(new)[(length(names)+1):max])
+      # } 
+      # since max is the maximum of length(names), pre-defined max and max(vec), so 
+      # following condition is not possible
+      #  else if ( length(names) > max ) {
+      #     warning(paste("\n", "    remained number of split columns from ", col, " is: ", max, 
+      #          ";", "\n", " number of names provided: ", length(names), "; ", "\n",
+      #         "     will ignore the last ", length(names) -max, " of names", sep=""))
+      #  new.name <- names[1:max]
+      } else {
+        new.name <- colnames(new)
+      }
+    }
+    
+    colnames(new) <- new.name    
+    # for data.table dt[, setdiff(colnames(dt),col), with=FALSE] 
+    if ( ! drop ) {
+        warning(paste("    Keep ", col, " column in output!", sep=""))
+        df.new <- cbind(df, new)
+    } else {
+        warning(paste("    Drop ", col, " column in output!", sep=""))
+        df.new <- cbind(df[, setdiff(colnames(df),col)], new)
+    }
+    return(df.new)
+}
+    
+

@@ -5,27 +5,28 @@
 Calculate Percent of OTUs Classified at a Given Taxonomic Rank
 }
 \description{
-This function consumes an OTU table, and a rank, then returns what percent of
-OTUs in the given table are classified at that taxonomic rank.
+This function consumes an OTU table, and a vector containing 
+taxnomic ranks, then returns what percent of OTUs in the given 
+table are classified at each taxonomic rank.
 }
 \usage{
-percent.classified(data, rank)
+percent.classified(data, ranks=c("f","g"))
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
 the OTU table to be processed.
 }
-  \item{rank}{
-the taxonomic rank you are interested in (see ?RAM.rank.formatting for
-formatting details).
+  \item{ranks}{
+a vector containing the taxonomic ranks you are interested in 
+(see ?RAM.rank.formatting for formatting details).
 }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-A numeric vector of length one, containing the result.
+A list of numeric vectors, containing the result for each taxonomic rank.
 }
 %\references{
 %% ~put references to the literature/web site here ~
@@ -46,7 +47,7 @@ Wen Chen and Joshua Simpson.
 data(ITS1)
 
 # find what percent of OTUs classified at genus level
-percent.classified(ITS1, "g")
+percent.classified(ITS1, ranks=c("f","g"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

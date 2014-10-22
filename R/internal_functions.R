@@ -31,33 +31,28 @@
 
 .get.rank.ind <- function(rank) {
   tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+  tax.classes.plural <- c("kingdoms", "phyla", "classes", "orders", "families", "genera", "species")
   tax.classes.short <- c("k", "p", "c", "o", "f", "g", "s")
   tax.classes.pattern <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
-  tax.classes.all <- c(tax.classes, tax.classes.short, tax.classes.pattern)
+  tax.classes.all <- c(tax.classes, tax.classes.plural, tax.classes.short, tax.classes.pattern)
   
   # we do not validate the rank here, as some methods call this 
   # in a for loop when rank=NULL
   
+  # convert to upper case as ignore.case in grepl
   # the length call below should return 7 (barring massive taxonomical discoveries...)
-  val <- which(rank==tax.classes.all) %% length(tax.classes)
-  
+
+   val <- unique(which(toupper(rank)==toupper(tax.classes.all)) %% length(tax.classes))
   # since we took the index mod 7, all species values were given index 0
   # however, we want them to have index 7:
-  if (val == 0) {
-    val <- 7;
-  }
+   if (val == 0) {
+      val <- 7;
+    }
+ 
   
   return(val)
 }
 
-.get.rank.pat <- function(rank) {
-  # we do not validate the rank here, as some methods call this 
-  # in a for loop when rank=NULL
-  tax.classes.pattern <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
-  
-  # get the rank index and return the appropriate pattern
-  return(tax.classes.pattern[.get.rank.ind(rank)])
-}
 
 .get.rank <- function(ind, pretty=FALSE) {
   # we do not validate the rank here, as some methods call this 
@@ -74,6 +69,68 @@
     tax.classes[ind]
   }
 }
+
+.get.rank.pat <- function(rank) {
+    # we do not validate the rank here, as some methods call this
+    # in a for loop when rank=NULL
+    tax.classes.pattern <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+    
+    # get the rank index and return the appropriate pattern
+    return(tax.classes.pattern[.get.rank.ind(rank)])
+}
+
+.get.rank <- function(ind, pretty=FALSE) {
+    # we do not validate the rank here, as some methods call this
+    # in a for loop when rank=NULL
+    tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+    
+    if (pretty) {
+        pretty.rank <- tax.classes[ind]
+        # capitalize the first letter (for plots)
+        pretty.rank <- .capitalize(pretty.rank)
+        pretty.rank
+        
+    } else {
+        tax.classes[ind]
+    }
+}
+
+.get.rank.name <- function(rank, plural=FALSE, pretty=FALSE) {
+  tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+  tax.classes.plural <- c("kingdoms", "phyla", "classes", "orders", "families", "genera", "species")
+  tax.classes.short <- c("k", "p", "c", "o", "f", "g", "s")
+  tax.classes.pattern <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+  tax.classes.all <- c(tax.classes, tax.classes.short, tax.classes.pattern, tax.classes.plural)
+  
+    # we do not validate the rank here, as some methods call this 
+    # in a for loop when rank=NULL
+  
+    # the length call below should return 7 (barring massive taxonomical discoveries...)
+    val <- which(rank==tax.classes.all) %% length(tax.classes)
+   
+    # since we took the index mod 7, all species values were given index 0
+    # however, we want them to have index 7:
+    if (val == 0) {
+      val <- 7;
+    }
+  
+  if (!isTRUE(plural)) {
+    val.name<-tax.classes[val]
+  } else {
+    val.name<-tax.classes.plural[val]
+  }
+
+  if (!is.na(val.name)) {
+      if (pretty) {
+          # capitalize the first letter (for plots)
+          val.name <- .capitalize(val.name)       
+      } else {
+          val.name <- val.name
+      }
+      return(val.name)
+  }
+}
+
 
 # capitalize the first letter of a string; works for vectors as well
 .capitalize <- function(string) {

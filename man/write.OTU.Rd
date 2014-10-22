@@ -5,11 +5,11 @@
 Write OTU-Style Table to .csv File 
 }
 \description{
-Creates a .csv-formatted file with the data from the specified OTU table
-\code{data}. The file will be created in your current working directory (see
-?getwd and ?setwd), unless specified otherwise by \code{file}. Note that if the
-\code{file} field does not end in .csv, ".csv" will be appended to the end of
-\code{file}.
+Creates a .csv-formatted file with the data from the specified OTU 
+table \code{data}. The file will be created in your current working 
+directory (see ?getwd and ?setwd), unless specified otherwise by 
+\code{file}. Note that if the \code{file} field does not end in 
+.csv, ".csv" will be appended to the end of \code{file}.
 }
 \usage{
 write.OTU(data, file)

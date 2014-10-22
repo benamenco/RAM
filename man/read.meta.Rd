@@ -23,8 +23,8 @@ the character used to separate cells in the file.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-Returns a data frame with the information from the file. The first row and
-column are used for the names of the other rows and columns.
+Returns a data frame with the information from the file. The first 
+row and column are used for the names of the other rows and columns.
 }
 %\references{
 %% ~put references to the literature/web site here ~

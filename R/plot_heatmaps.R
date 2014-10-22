@@ -104,6 +104,17 @@ group.heatmap <- function(data, meta, rank, factors,
                           top=NULL, count=FALSE, drop.unclassified=FALSE,
                           cut=NULL, file=NULL, ext=NULL, width=9, height=9) {
   
+  # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
+  # but I think returning an explanatory error message is worthwhile
+  
+  if (require("Heatplus")) {
+      Heatplus::annHeatmap2
+      Heatplus::niceBreaks
+  } else {
+    stop("package 'Heatplus' is required to use this function")
+  #  source("http://bioconductor.org/biocLite.R"); biocLite("Heatplus")
+  }
+  
   valid.OTU(data)
   .valid.rank(rank)
   .valid.meta(otu1=data, meta=meta)
@@ -117,7 +128,8 @@ group.heatmap <- function(data, meta, rank, factors,
   # this next part is a hack: the niceBreaks call is taken from the annHeatmap2
   # source; we use that call to calculate the minimum number of colours needed
   # which means that the majority of the palette is used (looks nice, distinguishes best)
-  cols.needed <- length(niceBreaks(range(as.matrix(stand), na.rm = TRUE), 256)) - 1
+  # Heatplus::niceBreaks
+  cols.needed <- length(Heatplus::niceBreaks(range(as.matrix(stand), na.rm = TRUE), 256)) - 1
   cols <- colorRampPalette(base.cols)(cols.needed)
   
   pastels <- function(n) {brewer.pal(n, "Pastel1")}
@@ -138,7 +150,8 @@ group.heatmap <- function(data, meta, rank, factors,
     ann.args$cluster <- list(Row = list(cuth = cut, col = pastels))
   }
   
-  ann.plot <- do.call(annHeatmap2, ann.args)
+  # call Heatplus::annHeatmap2
+  ann.plot <- do.call(Heatplus::annHeatmap2, ann.args)
   
   if (save) {
     .get.dev(file, ext, height=height, width=width)

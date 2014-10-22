@@ -16,10 +16,10 @@ data(ITS2)
 \format{
   A data frame with 4704 observations on the following 17 variables.
   \describe{
-    \item{\code{P1001.1M1,  P1001.1M2,  P1001.1M3,  P1001.1M4,  P1001.1M5,  
-                P1001.1M6,  P1001.1M7,  P1001.1M8,  P1001.1M9, P1001.1M10, 
-                P1001.1M11, P1001.1M12, P1001.1M13, P1001.1M14, P1001.1M15, 
-                P1001.1M16}}{Collection samples.}
+    \item{\code{P1001.1M1,  P1001.1M2,  P1001.1M3,  P1001.1M4,  
+                P1001.1M5,  P1001.1M6,  P1001.1M7,  P1001.1M8,  
+                P1001.1M9, P1001.1M10,  P1001.1M11, P1001.1M12, 
+                P1001.1M13, P1001.1M14, P1001.1M15, P1001.1M16}}{Collection samples.}
     \item{\code{taxonomy}}{the taxonomic classification of the OTU.}
   }
 }

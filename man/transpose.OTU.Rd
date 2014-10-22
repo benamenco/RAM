@@ -5,8 +5,8 @@
 Take the Transpose of an OTU Table
 }
 \description{
-Returns the transpose of the given OTU table, excluding the last column (which
-should contain taxonomic information).
+Returns the transpose of the given OTU table, excluding the last 
+column (which should contain taxonomic information).
 }
 \usage{
 transpose.OTU(data)
@@ -21,8 +21,9 @@ The OTU table to be transposed.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-Returns a data frame with rows equal to the columns of the original OTU, and
-columns equal to the rows of the original OTU. (Excluding the taxonomy column).
+Returns a data frame with rows equal to the columns of the original 
+OTU, and columns equal to the rows of the original OTU. 
+(Excluding the taxonomy column).
 }
 %\references{
 %% ~put references to the literature/web site here ~

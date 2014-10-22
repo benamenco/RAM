@@ -2,9 +2,9 @@
 \alias{location.formatting}
 
 \title{Location Formatting}
-\description{Some functions in \code{RAM} expect to find a column with 
-provincial/territorial data in the metadata. This data should use the standard 
-Canadian provincial/territorial abbreviations:
+\description{Some functions in \code{RAM} expect to find a column 
+with provincial/territorial data in the metadata. This data should 
+use the standard Canadian provincial/territorial abbreviations:
 \itemize{
 \item{Alberta - AB}
 \item{British Columbia - BC}

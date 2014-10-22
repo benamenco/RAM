@@ -10,9 +10,9 @@
 Calculate Dissimilarity Matrix Data
 }
 \description{
-These functions calculate different measures related to dissimilarity matrices.
-All of these functions allow you to specify one of many dissimilarity indices to
-be used.
+These functions calculate different measures related to dissimilarity 
+matrices. All of these functions allow you to specify one of many 
+dissimilarity indices to be used.
 }
 \usage{
 dissim.clust(data, dist.method="morisita", clust.method="average")
@@ -56,14 +56,19 @@ the method used for clustering the data. Must be one of "\code{ward}",
 dissimilarity matrix.}
 \item{\code{dist.eigenval }}{returns the eigenvalues of the dissimilarity
 matrix.}
-\item{\code{dissim.ord }}{returns a list: the first item is the the ordination
-distances, the second is the dissimilarity matrix distances.}
+\item{\code{dissim.ord }}{returns a list: the first item is the the 
+ordination distances, the second is the dissimilarity matrix distances.
+}
 \item{\code{dissim.GOF }}{returns the goodness of fit values of the
-dissimilarity matrix, for various numbers of dimensions used.}
-\item{\code{dissim.tree }}{returns a list: the first item is the tree distances,
-the second is the dissimilarity matrix distances.}
-\item{\code{dissim.pvar }}{returns a numeric vector containing the percent
-variation explained by each axis (where each sample corresponds to an axis).}
+dissimilarity matrix, for various numbers of dimensions used.
+}
+\item{\code{dissim.tree }}{returns a list: the first item is the tree 
+distances, the second is the dissimilarity matrix distances.
+}
+\item{\code{dissim.pvar }}{returns a numeric vector containing the 
+percent variation explained by each axis (where each sample corresponds 
+to an axis).
+}
 }
 %\references{
 %% ~put references to the literature/web site here ~
