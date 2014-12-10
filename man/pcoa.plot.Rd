@@ -10,7 +10,7 @@ graphing options, then produces a plot showing the PCoA analysis
 of the OTU table.
 }
 \usage{
-pcoa.plot(data, meta, factors, rank, stand.method = NULL,
+pcoa.plot(data, is.OTU=TRUE, meta, factors, rank, stand.method = NULL,
           dist.method = "morisita", sample.labels = TRUE, top = 20, 
           ellipse = FALSE, main = NULL, file = NULL, ext = NULL, 
           height = 8, width = 10, ggplot2 = TRUE, bw = FALSE)
@@ -18,7 +18,10 @@ pcoa.plot(data, meta, factors, rank, stand.method = NULL,
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-the OTU table to be used.
+an OTU table or taxonomic abundance matrix to be used.
+}
+  \item{is.OTU}{
+logical. Whether or not the input data an OTU table.
 }
   \item{meta}{
 the metadata table to be used.
@@ -29,6 +32,12 @@ factors for the samples in the OTU table (see Details).
 }
   \item{rank}{
 the rank to select the taxon groups at. 
+For an OTU table, if \code{rank} is set \code{NULL}, distance 
+matrix will be calcuated using all OTUs, otherwise, the OTU table 
+will be transformed to taxonomic abundance matrix before the 
+calculation of the distance matrix. If a taxonomic abundance matrix
+is provided, i.e. \code{is.OTU} is set \code{TRUE}, then the \code{rank}
+will be ignored.
 }
 \item{stand.method}{
 a method used to standardize the OTU table. One of "\code{total}", 
@@ -84,6 +93,10 @@ logical. Should the image be created in black and white?
 }
 }
 \details{
+This function uses \code{\link{pco}} in the labdsv package for the 
+Principal coordinates analysis (PCoA). The distance matrix was 
+square rooted before being passed to \code{\link{pco}} to avoid 
+negative eigenvalues.
 \code{factors} should be a named character vector specifying the 
 names of the columns to be used from \code{meta} 
 (see \code{\link{RAM.factors}}). 
@@ -142,28 +155,33 @@ data(ITS1, meta)
 # item is # Crop, which is a column from meta, and the second item 
 # is City, another # column from meta.
 
-pcoa.plot(ITS1, meta, rank="c", 
+pcoa.plot(ITS1, meta=meta, rank="c", 
           factors=c(Crop="Crop", City="City"))
-
+                              
+\dontrun{
 # If you want to customize legend labels and plot the top 20 taxon 
 # groups at genus:
-pcoa.plot(ITS1, meta, rank="g", 
+pcoa.plot(ITS1, meta=meta, rank="g", main="PCoA plot",
           factors=c(Place="City", Harvest_Method="Harvestmethod"))
-                                            
-\dontrun{
+                                           
 # In black & white, using base graphics:
-pcoa.plot(ITS1, meta, rank="c", factors=c(Plot="Plots"), 
+pcoa.plot(ITS1, meta=meta, rank="c", factors=c(Plot="Plots"), 
           ggplot=F, bw=T)
 
+pcoa.plot(ITS1, meta=meta, rank="c", factors=c(Plot="Plots"), 
+          ggplot=F, bw=T, dist.method="euc", stand.method="hell")
+
 # Focus on the samples: hide all groups and plot ellipses for Crop:
-pcoa.plot(ITS1, meta, rank="g", 
+pcoa.plot(ITS1, meta=meta, rank="g", 
           factors=c(Crop="Crop", City="City"), 
           ellipse=1, sample.labels=FALSE, top=0)
-          
+
 # Standardize the data before calculating distances:
-pcoa.plot(ITS1, meta, rank="g", factors=c(City="City"),  
+pcoa.plot(ITS1, meta=meta, rank="g", factors=c(City="City"),  
           stand.method="chi.square",
-          dist.method="euclidean")}
+          dist.method="euclidean")
+
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

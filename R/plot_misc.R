@@ -13,119 +13,148 @@
 # top.samples.[ggplot2|base]
 
 # internal function (hidden from user; they call plot.top.percent or plot.top.number)
-.top.samples.plot <- function(otu1, otu2=NULL, top=10, drop.unclassified, 
-                              labels, file=NULL, ext=NULL, height=8, width=16, 
+.top.samples.plot  <-  function(data, top=10, ranks=c("p","c","o","f","g"),
+                              drop.unclassified, cex.x=NULL,
+                              main=NULL,file=NULL, ext=NULL, 
+                              height=8, width=16, 
                               bw=FALSE, ggplot2=TRUE, mode) {
-  valid.OTU(otu1, otu2)
+
+ .valid.data(data)
+
+  save <- !is.null(file)
   .valid.plot.settings(file, ext)
   
-  if (is.null(otu2)) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
+  labels <- names(data)
+  num.otus <- length(data)
+
+  for ( i in 1:length(data) ) {
+    label <- names(data)[i]
+    otu <- data[[i]]
+    if ( is.null(otu) ) { break }
+    valid.OTU(otu)
+   
+    # set the function to select the top samples
+    # mode, top, and drop.unclassified inherit from this function 
+    # (.top.samples.plot) call, data and rank are determined from when top.func 
+    # is called later
+    top.func  <-  function(otu, rank){
+                       tax.abund(otu, top=top, rank=rank, 
+                                 count=FALSE, mode=mode,
+                            drop.unclassified=drop.unclassified)}
   }
   
-  # set the function to select the top samples
-  # mode, top, and drop.unclassified inherit from this function 
-  # (.top.samples.plot) call, data and rank are determined from when top.func 
-  # is called later
-  top.func <- function(data, rank){tax.abund(data, top=top, rank=rank, 
-                                              count=FALSE, mode=mode,
-                                              drop.unclassified=drop.unclassified)}
-  
   # set the appropriate titles
-  if (mode == "number") {
+  if ( is.null(main) ) {
+    if (mode == "number") {
     
-    top.title <- paste("Relative Abundance of Top", top, 
+      top.title  <-  paste("Relative Abundance of Top", top, 
                        "Taxon Groups at Five Taxonomic Ranks", sep=" ")
     
-  } else if (mode == "percent") {
-    top.title <- paste("Relative Abundance of Taxon Groups Above ", top, 
+    } else if (mode == "percent") {
+      top.title  <-  paste("Relative Abundance of Taxon Groups Above ", top, 
                        "% Relative Abundance at Five Taxonomic Ranks", sep="")
+    }
+  } else {
+    top.title <- main
   }
   
   # call the appropriate plotting function
   if (ggplot2) {
-    .top.samples.ggplot2(otu1, otu2, top, labels, file, ext, height, width, bw, 
-                         top.func, top.title)
+    .top.samples.ggplot2(data=data, top=top, mode=mode, ranks=ranks, 
+                        cex.x=cex.x, file=file, ext=ext, 
+                        height=height, width=width, bw=bw, 
+                        top.title=top.title, top.func=top.func)
   } else {
-    .top.samples.base(otu1, otu2, top, labels, file, ext, height, width, bw, 
-                      top.func, top.title)
+    .top.samples.base(data=data, top=top, mode=mode, ranks=ranks,
+               cex.x=cex.x, file=file, ext=ext, height=height, 
+                      width=width, bw=bw, 
+                      top.title=top.title, top.func=top.func)
   }
 }
 
-.top.samples.ggplot2 <- function(otu1, otu2=NULL, top=10, labels, file=NULL, ext=NULL, 
-                                 height=8, width=16, bw=FALSE, top.func, top.title) {
+.top.samples.ggplot2  <-  function(data, top, mode, 
+                       ranks=c("p","c","o","f","g"), cex.x=NULL,
+                       file, ext, height, width, bw, 
+                       top.title, top.func) {
   
-  valid.OTU(otu1, otu2)
-  save <- !is.null(file)
-  single.otu <- is.null(otu2)
-  ranks <- c("phylum", "class", "order", "family", "genus")
+  save  <-  !is.null(file)
+  .valid.plot.settings(file, ext)
+  #ranks  <-  c("phylum", "class", "order", "family", "genus", "species")
+  ranks <- ranks
   
-  if (single.otu) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
-  }
-  
-  # set up our list
-  rows <- vector(mode="list", length=length(ranks) * num.otus)
-  
-  index <- 1
-  for (OTU in list(otu1, otu2)){
-    # exit if otu2 is null
-    if (is.null(OTU)) { break }
-    
+  .valid.data(data)
+
+  labels <- names(data)
+  num.otus <- length(data)
+
+  rows <- list()
+
+  for ( i in 1:length(data) ) {
+    label <- names(data)[i]
+    OTU <- data[[i]]
+    if ( is.null(OTU) ) { break }
+    valid.OTU(OTU)
+ 
+    rank.list <- list()
     # get the number of samples
-    num.samples <- dim(OTU)[2] - 1
+    num.samples  <-  ncol(OTU) - 1
+
+    tax.names <- vector()
     
-    for (rank in ranks) {
-      # choose otu1/otu2 title appropriately
-      if (index <= 5) {
-        reg <- labels[1]
-      } else {
-        reg <- labels[2]
-      }
-      
+    for (j in ranks) {
       # get the data, add region/rank information
+      .valid.rank(j)
+      rank <- .get.rank.name(j)
+      tax.names <- c(tax.names, .capitalize(rank))
       top.otus <- top.func(OTU, rank=rank)
-      top.otus <- cbind(top.otus, Region=rep(reg, times=num.samples),
+      top.otus <- cbind(top.otus, Region=rep(label, times=num.samples),
                         Rank=rep(.capitalize(rank), times=num.samples))
       
+      #top.otus[["Region"]] <- label
+      #top.otus[["Rank"]] <- rank
+          
       # add to our list after melting
-      rows[[index]] <- melt(top.otus, id.vars=c("Region", "Rank"), 
+      rank.list[[rank]]  <-  melt(top.otus, id.vars=c("Region", "Rank"), 
                             value.name="RA", variable.name="OTU") 
-      index <- index + 1
+  
     }
+   rows[[label]]  <-  do.call(rbind, rank.list)
   }
+ 
+  data  <-  do.call(rbind, rows)
   
-  data <- do.call(rbind, rows)
-  
+  data$Rank <- factor(data$Rank,levels=tax.names, ordered=TRUE)
+ 
   # get a colour palette with colours for each OTU
-  cols.needed <- length(unique(data$OTU))
+  cols.needed  <-  length(unique(data$OTU))
   if (bw) {
-    colours <- rep("white", times=cols.needed)
+    colours  <-  rep("white", times=cols.needed)
   } else {
     if (cols.needed > 12) {
-      colours <- colorRampPalette(brewer.pal(12, "Set3"))(cols.needed)
+      colours  <-  colorRampPalette(brewer.pal(12, "Set3"))(cols.needed)
     } else {
-      colours <- brewer.pal(12, "Set3")
+      colours  <-  brewer.pal(12, "Set3")
     }
   }
   
-  p <- ggplot(data, aes_string(x="OTU", y="RA", fill="OTU")) + 
+  p  <-  ggplot(data, aes_string(x="OTU", y="RA", fill="OTU")) + 
     geom_boxplot(outlier.colour=NA) +
     scale_fill_manual(values=colours) +
     scale_y_continuous(labels = percent_format()) +
     xlab("Taxon") + ylab("Relative Abundance") + 
     ggtitle(top.title) +
-    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
-          legend.position="none",
+    theme(legend.position="none",
           panel.background = element_rect(fill="grey90"),
           panel.grid.major.x = element_line(colour="white"),
           panel.grid.major.y = element_line(colour="white")) +
-    facet_grid(Region ~ Rank, scales="free_x")
+    facet_grid(Region ~ Rank, scales="free_x") 
   
+  if ( is.null(cex.x) ) {
+    p <- p + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+  } else {
+    p <- p + theme(axis.text.x = element_text(size=cex.x, angle = 45, vjust = 1, hjust=1))
+  }
+
   if (save) {
     .ggsave.helper(file, ext, width, height, plot=p)
   }
@@ -133,23 +162,21 @@
   p
 }
 
-.top.samples.base <- function(otu1, otu2=NULL, top=10, labels, file=NULL, ext=NULL, 
-                              height=8, width=16, bw=FALSE, top.func, top.title) {
-  single.otu <- is.null(otu2)
+.top.samples.base  <-  function(data, top, mode, 
+                     ranks=c("p","c","o","f","g"), cex.x=NULL,
+                     file, ext, height, width, bw, top.title, top.func) {
+  
+  save  <-  !is.null(file)
   .valid.plot.settings(file, ext)
-  
-  if (single.otu) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
-  }
-  
-  save <- !is.null(file)
-  
   if (save) { .get.dev(file, ext, height=height, width=width) }
-  
+
+  .valid.data(data)
+
+  labels <- names(data)
+  num.otus <- length(data)
+
   # backup plot settings and restore afterwards
-  opar <- par(no.readonly = TRUE)
+  opar  <-  par(no.readonly = TRUE)
   on.exit(par(opar))
   
   # configure plot settings
@@ -158,41 +185,45 @@
   # setup our layout 
   layout(matrix(1:(5 * num.otus), ncol=5, byrow=TRUE))
   
-  for (elem in list(otu1, otu2)) {
-    # stop if otu2 is null
-    if (is.null(elem)) { break }
-    
-    elem.ranks <- vector(mode="list", length=5)
+
+  rows <- list()
+
+  for ( i in 1:length(data) ) {
+    label <- names(data)[i]
+    elem <- data[[i]]
+    if ( is.null(elem) ) { break }
+    valid.OTU(elem)
+
+    elem.ranks  <-  list()
     
     # call get.rank for each taxonomic classification
-    index <- 1
-    for (i in c("p", "c", "o", "f", "g")) {
-      elem.ranks[[index]] <- top.func(elem, rank=i)
-      index <- index + 1
+    tax.names <- vector()
+    for (j in ranks) {
+      pretty.rank <- .get.rank(.get.rank.ind(j), pretty=TRUE)
+      tax.names <- c(tax.names, pretty.rank)
+      elem.ranks[[pretty.rank]] <- top.func(elem, rank=j)
     }
     
     # get color palette
     if (bw) {
-      cols <- grey.colors(top)
+      cols  <-  grey.colors(top)
     } else {
       # the max pallette size is 12; if length > 12 we get the palette with 12
       # colors (which will be recycled by boxplot, which is fine)
-      cols <- suppressWarnings(brewer.pal(top, "Set3"))
+      cols  <-  suppressWarnings(brewer.pal(top, "Set3"))
     }
     
-    tax.names <- c("Phylum", "Class", "Order", "Family", "Genus")
-    
     # plot each rank
-    for (i in 1:length(tax.names)) {
+    for (x in 1:length(tax.names)) {
       # plot the data
-      boxplot(elem.ranks[[i]], col=cols, notch=FALSE, cex.axis=0.8)
-      # add a legend
-      if (identical(elem, otu1)) {
-        region <- labels[1]
+      if ( is.null(cex.x) ) {
+        boxplot(elem.ranks[[x]], col=cols, notch=FALSE, cex.axis=0.8)
       } else {
-        region <- labels[2]
-      }
-      legend("topright", legend=paste0(region, " - ", tax.names[i]))
+        boxplot(elem.ranks[[x]], col=cols, notch=FALSE, cex.axis=cex.x)
+      } 
+      # add a legend
+      region  <-  label
+      legend("topright", legend=paste0(region, " - ", tax.names[x]))
     }
   }
   
@@ -206,76 +237,75 @@
 
 # group.top.percent and group.top.number are what the user call; the other top.samples.X
 # functions are used interally to produce the graph.
-group.top.percent <- function(otu1, otu2=NULL, top=10, drop.unclassified=FALSE, 
-                              labels=c("ITS1", "ITS2"), 
-                              file=NULL, ext=NULL, height=8, width=16, 
+group.top.percent  <-  function(data, top=10, ranks=c("p","c","o","f","g"), 
+                              drop.unclassified=FALSE,  cex.x=NULL,
+                              main=NULL,file=NULL, ext=NULL, height=8, width=16, 
                               bw=FALSE, ggplot2=TRUE) {
-  valid.OTU(otu1, otu2)
-  # quickly get the numer of OTUs, !is.null will be coerced to 0 or 1
-  .valid.labels(1 + !is.null(otu2), labels)
-  
-  .top.samples.plot(otu1, otu2, top=top, labels=labels, 
-                    drop.unclassified=drop.unclassified,
+
+  .valid.data(data)
+  labels <- names(data)
+  num.otus <- length(data)
+    
+  .top.samples.plot(data=data, top=top, ranks=ranks,
+                    drop.unclassified=drop.unclassified, main=main, cex.x=cex.x,
                     file=file, ext=ext, height=height, width=width,
                     bw=bw, ggplot2=ggplot2, mode="percent")
 }
 
-group.top.number <- function(otu1, otu2=NULL, top=10, drop.unclassified=FALSE,
-                             labels=c("ITS1", "ITS2"), 
-                             file=NULL, ext=NULL, height=8, width=16, 
-                             bw=FALSE, ggplot2=TRUE) {
-  valid.OTU(otu1, otu2)
-  # quickly get the numer of OTUs, !is.null will be coerced to 0 or 1
-  .valid.labels(1 + !is.null(otu2), labels)
-  
-  .top.samples.plot(otu1, otu2, top=top, labels=labels, 
-                    drop.unclassified=drop.unclassified,
+group.top.number  <-  function(data, top=10, ranks=c("p","c","o","f","g"),
+                             drop.unclassified=FALSE, cex.x=NULL,
+                             main=NULL, file=NULL, ext=NULL, height=8, 
+                             width=16, bw=FALSE, ggplot2=TRUE) {
+  .valid.data(data)
+  labels <- names(data)
+  num.otus <- length(data)
+
+  .top.samples.plot(data, top=top, ranks=ranks, cex.x=cex.x,
+                    drop.unclassified=drop.unclassified, main=main,
                     file=file, ext=ext, height=height, width=width, 
                     bw=bw, ggplot2=ggplot2, mode="number")
 }
 
-group.abundance <- function(otu1, otu2=NULL, rank, 
+group.abundance  <-  function(data, rank, 
                             top=NULL, count=FALSE, drop.unclassified=FALSE,
-                            file=NULL, ext=NULL, labels=c("ITS1", "ITS2"),
+                            cex.x=NULL, main=NULL, file=NULL, ext=NULL, 
                             height=8, width=16, bw=FALSE, ggplot2=TRUE) {
   
-  .valid.plot.settings(file, ext)
   .valid.rank(rank)
+  .valid.data(data)
   
-  if (is.null(otu2)) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
-  }
-  
-  .valid.labels(num.otus, labels)
+  save  <-  !is.null(file)
+  .valid.plot.settings(file, ext)
+  if (save) { .get.dev(file, ext, height=height, width=width) }
+
+  .valid.data(data) 
+  labels <- names(data)
+  num.otus <- length(data)
   
   if (ggplot2) {
-    .abundance.ggplot2(otu1, otu2, rank, top, count, drop.unclassified, file, ext,
-                       labels, height, width, bw)
+    .abundance.ggplot2(data, rank, top, count, drop.unclassified, cex.x, main, file, ext,
+                       height, width, bw)
   } else {
-    .abundance.base(otu1, otu2, rank, top, count, drop.unclassified, file, ext,
-                    labels, height, width, bw)
+    .abundance.base2(data, rank, top, count, drop.unclassified, cex.x, main, file, ext,
+                    height, width, bw)
   }
 }
 
-.abundance.base <- function(otu1, otu2=NULL, rank, 
+
+.abundance.base2 <- function(data, rank, 
                             top=NULL, count=FALSE, drop.unclassified=FALSE,
-                            file=NULL, ext=NULL, labels, 
+                            cex.x=NULL, main=NULL, file=NULL, ext=NULL, labels, 
                             height=8, width=9, bw=FALSE) {
-  valid.OTU(otu1, otu2)
+  .valid.data(data)
   .valid.rank(rank)
   .valid.plot.settings(file, ext)
   
   save <- !is.null(file)
   
-  single.otu <- is.null(otu2)
+  #single.otu <- is.null(otu2)
   
-  if (single.otu) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
-  }
+  num.otus <- length(data)
+  
   
   # set up the appropriate device if saving
   if (save) {
@@ -295,31 +325,40 @@ group.abundance <- function(otu1, otu2=NULL, rank,
   
   if (num.otus == 1) {
     lmat <- matrix(1:3, ncol=1)
-  } else {
+  } else if ( num.otus == 2) {
     lmat <- matrix(c(1:3, c(1, 4, 5)), ncol=2)
-  }
+  } else {
+    stop("base plotting in function group.abundance only supports a maximum of TWO OTUs")
+  } 
   
   layout(lmat, heights=c(1, 8, 2))
   
   pretty.rank <- .get.rank(.get.rank.ind(rank), pretty=TRUE)
   
-  if (count) {
-    top.title <- paste("Counts of Taxonomic Groups at", pretty.rank, "Level") 
-  } else {
-    top.title <- paste("Relative Abundance of Taxonomic Groups at", pretty.rank,
+  if ( is.null(main) ) {
+    if (count) {
+      top.title <- paste("Counts of Taxonomic Groups at", pretty.rank, "Level") 
+    } else {
+      top.title <- paste("Relative Abundance of Taxonomic Groups at", pretty.rank,
                        "Level")
+    }
+  } else {
+    top.title <- main
   }
   
   par(mar=c(0, 0, 4, 0))
   plot.new()
   title(main=top.title, cex.main=1.5)
   
-  index <- 1
+  #index <- 1
   
-  for (elem in list(otu1, otu2)) {
+  for (i in 1:length(data) ) {
+    elem <- data[[i]]
+    valid.OTU(elem)
     # stop if not given otu2
     if (is.null(elem)) { break }
-    
+    label <- names(data)[i]
+      
     abund <- tax.abund(elem, rank=rank, drop.unclassified=drop.unclassified,
                          top=top, count=count)
     
@@ -353,6 +392,12 @@ group.abundance <- function(otu1, otu2=NULL, rank,
     barplot.args <- list(abund, beside=FALSE, names.arg=colnames(abund),
                          cex.names=0.7, col=cols, las=2, axes=FALSE,
                          ylim=c(0, max(breaks)))
+   
+    if ( is.null(cex.x) ) {
+      barplot.args$cex.names=0.7
+    } else {
+      barplot.args$cex.names=cex.x
+    }
     
     leg.args <- list(x="center", legend=rownames(abund), cex=0.7, horiz=FALSE, 
                      ncol=3, fill=cols)
@@ -371,7 +416,7 @@ group.abundance <- function(otu1, otu2=NULL, rank,
     
     title(ylab=y.label, line=3.75)
     title(xlab="Samples", line=4.2)
-    title(main=labels[index])
+    title(main=label)
     
     
     axis(side=2, at=breaks, las=2)
@@ -381,7 +426,6 @@ group.abundance <- function(otu1, otu2=NULL, rank,
     par(mar=c(0, 0, 0, 0))
     plot.new()
     do.call(legend, leg.args)
-    index <- index + 1
   }
   
   if (save) {
@@ -391,91 +435,110 @@ group.abundance <- function(otu1, otu2=NULL, rank,
   invisible()
 }
 
-.abundance.ggplot2 <- function(otu1, otu2=NULL, rank, 
+
+.abundance.ggplot2  <-  function(data, rank, 
                                top=NULL, count=FALSE, drop.unclassified=FALSE,
-                               file=NULL, ext=NULL, labels, 
+                               cex.x=NULL, main=NULL, file=NULL, ext=NULL,  
                                height=8, width=16, bw=FALSE) {
   # validate inputs
-  valid.OTU(otu1, otu2)
-  .valid.plot.settings(file, ext)
-  save <- !is.null(file)
-  single.otu <- is.null(otu2)
-  
-  taxa <- vector(mode="list", length=2)
-  index <- 1
-  
-  for (elem in list(otu1, otu2)) {
-    if (is.null(elem)) {
-      break
-    }
+  save  <-  !is.null(file)
+  if (save) {
+    .valid.plot.settings(file, ext)
+  }  
+
+  .valid.rank(rank)
+
+  if ( class(data) != "list" ) {
+    stop("please provide data as list, see ?RAM.input.formatting")
+  }
+
+  labels <- names(data)
+  num.otus <- length(data)
+
+  taxa  <-  list()
+  for (i in 1:length(data) ) {
+    elem <- data[[i]]
+    if (is.null(elem)) { break }
+    label <- names(data)[i]
+
     # get the groups
-    elem.tax <- tax.abund(elem, rank=rank, drop.unclassified=drop.unclassified,
+    elem.tax  <-  tax.abund(elem, rank=rank, drop.unclassified=drop.unclassified,
                           count=count, top=top)
     # melt by Sample
-    elem.tax <- melt(cbind(elem.tax, Sample=rownames(elem.tax)), id.vars="Sample",
-                     value.name="RA", variable.name="Rank")
+    elem.tax  <-  melt(cbind(elem.tax, Sample=rownames(elem.tax)), id.vars="Sample",
+                     value.name="RA", variable.name="Taxon")
     # bind together with appropriate label
-    elem.tax <- cbind(elem.tax, Region=labels[index])
+    elem.tax  <-  cbind(elem.tax, Region=label)
     
-    taxa[[index]] <- elem.tax
-    index <- index + 1
+    taxa[[label]]  <-  elem.tax
   }
   
-  all.taxa <- rbind(taxa[[1]], taxa[[2]])
+  all.taxa  <-  do.call("rbind", taxa)
   
   # reorder levels based on order of appearance in table
-  all.taxa$Sample <- ordered(all.taxa$Sample, levels=unique(all.taxa$Sample))
+  all.taxa$Sample  <-  ordered(all.taxa$Sample, levels=unique(all.taxa$Sample))
   
-  if (count) {
-    title <- paste("Counts of Taxonomic Groups at", 
+  if ( is.null(main) ) {
+    if (count) {
+      title  <-  paste("Counts of Taxonomic Groups at", 
                    .get.rank(.get.rank.ind(rank), pretty=TRUE),
                    "Level")
+    } else {
+      title  <-  paste("Relative Abundance of Taxonomic Groups at", 
+                   .get.rank(.get.rank.ind(rank), pretty=TRUE),
+                   "Level")
+    }
   } else {
-    title <- paste("Relative Abundance of Taxonomic Groups at", 
-                   .get.rank(.get.rank.ind(rank), pretty=TRUE),
-                   "Level")
+    title <- main
   }
   
   # we need to use aes_string to pass CRAN check; see 
   # http://goo.gl/JxgZ9u
-  p <- ggplot(all.taxa, aes_string(x="Sample", y="RA", fill="Rank")) + 
+  p  <-  ggplot(all.taxa, aes_string(x="Sample", y="RA", fill="Taxon")) + 
     geom_bar(position="stack", stat="identity") +
     #coord_flip() +
     xlab("Samples") +
-    ggtitle(title) +
-    theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+    ggtitle(title) 
+
+  if ( is.null(cex.x) ) {
+     p <- p + theme(legend.position="bottom", 
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
           panel.grid.major.x = element_blank())
-  
+  } else {
+     p <- p + theme(legend.position="bottom", 
+      axis.text.x = element_text(size=cex.x, angle = 45, vjust = 1, hjust=1),
+          panel.grid.major.x = element_blank())
+  }
+ 
   if (!count) {
-    p <- p +  scale_y_continuous(labels = percent_format()) +
+    p  <-  p +  scale_y_continuous(labels = percent_format()) +
       ylab("Relative Abundance")
   } else {
-    p <- p + ylab("Count")
+    p  <-  p + ylab("Count")
   }
   
-  if (!single.otu) { # for multiple OTUs, wrap based on region
-    p <- p + facet_wrap(~Region, scales="free_x")
-  }
+  p  <-  p + facet_wrap(~Region, scales="free_x")
+ 
   
   if (bw) { # for black/white plots
     warning("the ggplot2 package used to create this graph cannot handle patterning for bar plots; greyscale shading is being used.")
-    p <- p + scale_fill_grey(guide = guide_legend(direction="horizontal", ncol=5)) +
+    p  <-  p + scale_fill_grey(guide = guide_legend(direction="horizontal", ncol=5)) +
       theme_bw() + theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
     
   } else { # use actual colours
     
-    cols.needed <- length(unique(all.taxa$Rank))
+    cols.needed  <-  length(unique(all.taxa$Taxon))
     
     if (cols.needed > 12) {
       # palette max is 12; so if we have more than 6 entries for otu1/2, we 
       # need to manually construct a palette to use
       
-      col.func <- colorRampPalette(brewer.pal(12, "Set3"))
-      p <- p + scale_fill_manual(values=col.func(cols.needed), 
+      col.func  <-  colorRampPalette(brewer.pal(12, "Set3"))
+      p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
                                  guide=guide_legend(direction="horizontal", ncol=5))
     } else {
       # otherwise, we can just use the Set3 palette from RColorBrewer
-      p <- p + scale_fill_brewer(palette="Set3",
+      p  <-  p + scale_fill_brewer(palette="Set3",
                                  guide=guide_legend(direction="horizontal", ncol=5))
     }
   }
@@ -485,382 +548,6 @@ group.abundance <- function(otu1, otu2=NULL, rank,
   }
   
   p
-}
-
-pcoa.plot <- function(data, meta, factors, rank, stand.method=NULL,
-                      dist.method="morisita", sample.labels=TRUE,
-                      top=20, ellipse=FALSE, main=NULL, file=NULL, ext=NULL,
-                      height=8, width=10, ggplot2=TRUE, bw=FALSE) {
-  
-  valid.OTU(data)
-  .valid.rank(rank)
-  .valid.meta(otu1=data, meta=meta)
-  num.facs <- length(factors)
-  
-  if (!is.numeric(top) || length(top) != 1L || top < 0) {
-    stop("'top' must be a numeric vector of length 1 and have a value > 0.")
-  }
-  
-  if (!is.logical(sample.labels) || length(sample.labels) != 1L || 
-        is.na(sample.labels)) {
-    stop("'sample.labels' must be a logical vector of length 1.")
-  }
-  
-  if (!is.logical(bw) || length(bw) != 1L || is.na(bw)) {
-    stop("'bw' must be a logical vector of length 1.")
-  }
-  
-  # we have to check with identical, because in R, TRUE == 1 but 
-  # identical(TRUE, 1) is FALSE
-  if (!any(identical(ellipse, 1), identical(ellipse, 2), 
-           identical(ellipse, FALSE))) {
-    stop("'ellipse' should be either 1, 2, or FALSE; see ?pcoa.plot for details.")
-  }
-  
-  if (ellipse > num.facs) {
-    stop("argument 'ellipse' cannot be greater than the number of factors.")
-  }
-  
-  if (ellipse && ggplot2) {
-    warning("drawing the ellipses for groups is not currently supported when 'ggplot2=TRUE'.")
-  }
-  
-  # get the metadata factors
-  meta.factors <- .valid.factors(meta, factors, min.factors=1, max.factors=2)
-  
-  # if we're plotting 2 factors in b&w, we need to 'cross' the two factors and 
-  # assign a unique symbol to each
-  if (bw && num.facs >= 2) {
-    
-    # ggplot complains if we include /, -, " ", etc. in names
-    if (ggplot2) {separator <- "_"} else {separator <- "/"}
-    
-    cross.name <- paste(names(meta.factors), collapse=separator)
-    meta.factors <- cbind(paste(meta.factors[ ,1], meta.factors[ ,2], 
-                                sep=separator),
-                          meta.factors)
-    
-    names(meta.factors)[1] <- cross.name
-  }
-  
-  for (column in colnames(meta.factors)) {
-    if (!is.factor(meta.factors[ ,column])) {
-      warning(paste("column", column,
-                    "from 'factors' is not a factor; attempting to coerce now", 
-                    "(see ?RAM.factors for help)."))
-      
-      meta.factors[ ,column] <- as.factor(meta.factors[ ,column])
-    }
-    
-    if (length(levels(meta.factors[ ,column])) > 9) {
-      warning(paste("there are more than 9 levels in column", column,
-              "from 'factor'; only 9 will be shown."))
-    }
-    
-    # to plot ellipses, we need more than 2 counts for each level
-    if (any(summary(meta.factors[ ,column]) <= 2) && ellipse) {
-      warning(paste("column", column, "from 'factor' has less than two",
-                    "observations for a level, this prevents ellipses from",
-                    "being plotted."))
-    }
-  }
-  
-  otu.t <- transpose.OTU(data)
-  abund <- tax.abund(data, rank=rank, drop.unclassified=TRUE)
-  
-  if (!is.null(stand.method)) {
-    abund <- decostand(abund, stand.method)
-  }
-  
-  dists <- vegdist(abund, method=dist.method)
-  
-  k.max <- dim(otu.t)[1] - 1
-  
- # if (!require("labdsv")) {
- #     stop("package 'labdsv' is required to use this function")
- # }
-  
-  pcoa <- suppressWarnings(pco(dists, k.max))
-  
-  # if we don't get at least two axes of ordination, throw error
-  if (dim(pcoa$points)[2] < 2) {
-    stop("less than two axes of ordination were calculated. Please try again with different values for 'stand.method' and/or 'dist.method'.")
-  }
-  
-  sp.scores <- wascores(pcoa$points, abund)
-  
-  if (ggplot2) {
-    .pcoa.ggplot2(abund, pcoa, rank, sp.scores, meta.factors, sample.labels, 
-                  top, ellipse, main, file, ext, height, width, bw)
-  } else {
-    .pcoa.base(abund, pcoa, rank, sp.scores, meta.factors, sample.labels, top, 
-               ellipse, main, file, ext, height, width, bw)
-  }
-}
-
-.pcoa.ggplot2 <- function(abund, pcoa, rank, sp.scores, meta.factors, 
-                          sample.labels, top, ellipse, main, file, ext, height, width,
-                          bw) {
-  
-  num.facs <- length(meta.factors)
-  save <- !is.null(file)
-  
-  # set up the data frame with pcoa data
-  samples <- as.data.frame(cbind(Sample=rownames(pcoa$points), 
-                                 X=pcoa$points[ , 1], Y=pcoa$points[ , 2]))
-  
-  for (i in 1:num.facs) {
-    samples <- cbind(samples, meta.factors[[i]])
-    names(samples)[i + 3] <- names(meta.factors)[i]
-  }
-
-  samples$X <- as.numeric(as.character(samples$X))
-  samples$Y <- as.numeric(as.character(samples$Y))
-  samples$Sample <- as.character(samples$Sample)
-  
-  # set up the data frame with taxonomic data
-  otus <- as.data.frame(cbind(OTU=rownames(sp.scores), X=sp.scores[ ,1], 
-                              Y=sp.scores[ ,2]))
-  otus$X <- as.numeric(as.character(otus$X))
-  otus$Y <- as.numeric(as.character(otus$Y))
-  
-  # filter out the top samples
-  if (dim(otus)[1] < top) {
-    warning(paste("there are less than", top, 
-                  "taxon groups at the given rank; plotting them all."))
-    
-    top <- dim(sp.scores)[1]
-  }
-  
-  otus <- otus[1:top, ]
-  
-  # determine aes based on number of meta factors and bw setting
-  # (recall the special case when bw=T and num.facs >=2 since we 'crossed' the
-  # factors)
-  if (num.facs >= 2) {
-    if (bw) {
-      samples.aes <- aes_string(x="X", y="Y", label="Sample",
-                                shape=names(samples)[4])
-    } else {
-      samples.aes <- aes_string(x="X", y="Y", label="Sample", 
-                                shape=names(samples)[4],
-                                colour=names(samples)[5])
-    }
-  } else if (num.facs == 1) {
-    samples.aes <- aes_string(x="X", y="Y", label="Sample", shape=names(samples)[4])
-  }
-  
-  num.samples <- length(unique(samples$Sample))
-  
-  # create a vector for the vertical position of labels; make half the labels 
-  # justified up/down on y-axis, the others constant on y-axis
-  v.jitter <- sample(c(2.8, 0.5), size=num.samples, replace=TRUE)
-  v.jitter <- sapply(v.jitter, 
-                     FUN=function(x){if (x != 0.5 && runif(1) < 0.5) {x * -1} else {x}})
-  
-  # for the labels with no y-axis jitter, add x-axis jitter
-  h.jitter <- sapply(v.jitter, 
-                     FUN=function(x){if (x != 0.5) {0.5} else {sample(c(-0.4, 1.4), size=1)}})
-  
-  
-  # add points for samples (with labels)
-  p <- ggplot(samples, samples.aes) + geom_point(alpha=0.65, size=7)
-  
-  if (sample.labels) {
-    # jitter the sample labels (using vectors from above)
-    p <- p + geom_text(size=2, colour="black", vjust=v.jitter, hjust=h.jitter)
-  }
-    
-  if (top != 0) {
-    # add taxon groups
-    p <- p +
-      geom_text(aes_string(x="X", y="Y", label="OTU", colour=NULL, shape=NULL),
-                data=otus, size=3, colour="darkgrey", alpha=0.8)
-  }
-  
-  x.lab <- paste0("Axis I (", round(100 * pcoa$eig[1] / sum(pcoa$eig), digits=2), "%)")
-  y.lab <- paste0("Axis II (", round(100 * pcoa$eig[2] / sum(pcoa$eig), digits=2), "%)")
-  
-  #main.title <- paste("PCoA for Top", top, "Taxon Groups at",
-  #                    .get.rank(.get.rank.ind(rank), pretty=TRUE),
-  #                     "Level")
-  if (is.null(main)) {
-        main.title = ""
-  } else {
-      main.title = main
-  }
-  
-  # add titles
-  p <- p + ggtitle(main.title) + xlab(x.lab) + ylab(y.lab)
-  
-  # add theme
-  p <- p + theme(panel.background = element_rect(fill="white"),
-                 panel.border = element_rect(colour="black", fill="transparent"))
-
-  # add colour
-  p <- p + scale_color_brewer(palette="Set1")
-  
-  if (save) {
-    .ggsave.helper(file, ext, width, height, plot=p)
-  }
-  
-  p
-}
-
-.pcoa.base <- function(abund, pcoa, rank, sp.scores, meta.factors, 
-                       sample.labels, top, ellipse, main, file, ext, height, width,
-                       bw) {
-  
-  .valid.plot.settings(file, ext)
-  save <- !is.null(file)
-  
-  opar <- par(no.readonly = TRUE)
-  on.exit(par(opar))
-  
-  num.facs <- min(length(meta.factors), 2)
-  
-  # ugly hack, if bw=T and we have >=2 factor, we've "crossed" two other factors
-  # so manually set num.facs <- 1
-  
-  if (bw && num.facs >=2) { num.facs <- 1 }
-  
-  if (save) {
-    .get.dev(file, ext, height=height, width=width)
-  }
-  
-  lmat <- matrix(c(rep(1, times=num.facs), 2:(num.facs + 1)), ncol=2)
-  layout(lmat, widths=c(9, 1))
-  
-  # get label names
-  x.lab <- paste0("Axis I (", round(100 * pcoa$eig[1] / sum(pcoa$eig), digits=2), "%)")
-  y.lab <- paste0("Axis II (", round(100 * pcoa$eig[2] / sum(pcoa$eig), digits=2), "%)")
-  # main.title <- paste("PCoA for Top", top, "Taxon Groups at",
-  #                    .get.rank(.get.rank.ind(rank), pretty=TRUE),
-  #                    "Level")
-  
-  if (is.null(main)) {
-      main.title = ""
-  } else {
-      main.title = main
-  }
-  
-  plot.args <- list(pcoa$points[ , 1:2], xlab=x.lab, ylab=y.lab, main=main.title,
-                    lwd=4, cex=2.5)
-  
-  par(mar=c(5.1, 4.1, 4.1, 0))
-  
-  # set up colours for meta factors 
-  meta.cols <- vector(length=num.facs, mode="list")
-  palettes <- list(brewer.pal(9, "Pastel1"), brewer.pal(9, "Set1"))
-  
-  for (i in 1:num.facs) {
-    
-    meta.cols[[i]] <- palettes[[i]][as.numeric(meta.factors[[i]])]
-    names(meta.cols[[i]]) <- as.character(meta.factors[[i]])
-  }
-  
-  # the shapes to be used for bw plotting (we pass these numbers to pch)
-  shapes <- c(0:2, 5:6, 15:18)
-  
-  if (num.facs == 2) {
-    
-      plot.args <- c(plot.args, pch=21, bg=list(meta.cols[[1]]), 
-                     col=list(meta.cols[[2]]))
-    
-  } else { # only one metadata factor
-    if (bw) {
-      plot.args <- c(plot.args, pch=list(shapes[as.numeric(meta.factors[[1]])]))
-      
-    } else {
-      plot.args <- c(plot.args, pch=16, col=list(meta.cols[[1]]))
-    }
-  }
-  
-  do.call(plot, plot.args)
-  
-  if (ellipse) {
-    
-    # if bw=TRUE & num.facs >=2, the first column is the "crossed" factor, which
-    # we correct for by adding 1
-    if (bw && num.facs >= 2) { ellipse <- ellipse + 1}
-    
-    # add ellipses with group names as centroids
-    for (level in unique(meta.factors[[ellipse]])) {
-      
-      if (bw) {
-        ordiellipse(pcoa, meta.factors[[ellipse]], show.groups = level,
-                    col="black", label=TRUE)
-        
-      } else { # plot in colour
-        ordiellipse(pcoa, meta.factors[[ellipse]], show.groups = level,
-                    # this call gets the appropriate colour palette, then extracts
-                    # the colour corresponding to the value of the factor level
-                    col=meta.cols[[ellipse]][names(meta.cols[[ellipse]]) == level],
-                    label=TRUE)
-      }
-    }
-  }
-  
-  if (sample.labels) {
-  # plot the sample labels
-  text(pcoa$points[ , 1:2], labels=rownames(abund), 
-       # randomly place the labels; call the function until this looks nice
-       pos=sample(4, size=length(rownames(abund)), replace=TRUE), 
-       cex=0.6, offset=1)
-  }
-  
-  # filter out the top samples
-  if (dim(sp.scores)[1] < top) {
-    warning(paste("there are less than", top, 
-                  "taxon groups at the given rank; plotting them all."))
-    
-    top <- dim(sp.scores)[1]
-  }
-  
-  if (top != 0) {
-    # plot the taxonomic information
-    text(sp.scores[1:top, 1:2, drop=FALSE], labels=rownames(sp.scores)[1:top], 
-         col="darkgrey", cex=0.8)
-  }
-  
-  for (i in 1:num.facs) {
-    
-    # align the legend boxes with the edges of the plot
-    if (i == 1) {
-      par(mar=c(0, 0, 4.1, 0))
-      plot.new()
-      dir <- "topleft"
-      # pch value for filled dot
-      leg.shape <- 16
-      
-    } else if (i == 2) {
-      par(mar=c(5.1, 0, 0, 0))
-      plot.new()
-      dir <- "bottomleft"
-      # pch value for filled dot
-      leg.shape <- 21
-    }
-    
-    leg.args <- list(dir, legend=levels(meta.factors[[i]]), 
-                     title=names(meta.factors)[i], xpd=NA)
-    
-    # if black and white, use shapes for legend, otherwise use colour
-    if (bw) {
-      leg.args <- c(leg.args, pch=list(shapes[1:length(levels(meta.factors[[i]]))]))
-      
-    } else {
-      leg.args <- c(leg.args, pch=leg.shape, bg="white", pt.lwd=3, pt.cex=1.5,
-                    col=list(unique(meta.cols[[i]])))
-    }
-    
-    do.call(legend, leg.args)
-  }
-  
-  if (save) {
-    dev.off()
-  }
-  
-  invisible()
 }
 
 group.temporal <- function(data, meta, date.col, factors, rank, group, 
@@ -905,6 +592,8 @@ group.temporal <- function(data, meta, date.col, factors, rank, group,
   meta.factors <- rename(meta.factors, c("Group.1"="Date"))
   meta.factors <- melt(meta.factors, id.vars="Date", variable.name="Measure",
                        value.name="Value")
+  names(meta.factors)[ncol(meta.factors)] <- "Value"
+  names(meta.factors)[ncol(meta.factors)-1] <- "Measure"
   
   xlims <- c(min(meta.factors$Date), max(meta.factors$Date))
   
@@ -929,6 +618,8 @@ group.temporal <- function(data, meta, date.col, factors, rank, group,
   
   abund.agg <- melt(abund.agg, id.vars="Date", variable.name="Group", 
                      value.name="Count")
+  names(abund.agg)[ncol(abund.agg)] <- "Count"
+  names(abund.agg)[ncol(abund.agg)-1] <- "Group"
   
   main.plot <- ggplot(abund.agg, aes_string(x="Date", y="Count", fill="Group")) + 
                geom_bar(stat="identity", position="stack") +
@@ -1028,6 +719,8 @@ group.spatial <- function(data, meta, date.col, province.col, rank, group,
   abund.loc <- rbind(abund.loc, do.call(rbind, missing))
   abund.loc.melt <- melt(abund.loc, id.vars=c("id", "Date"), variable.name="Group",
                          value.name="Count")
+  names(abund.loc.melt)[ncol(abund.loc.melt)] <- "Count"
+  names(abund.loc.melt)[ncol(abund.loc.melt)-1] <- "Group"
   
   loc.map <- base::merge(map.fortify.list$map, abund.loc.melt, by="id")
   
@@ -1076,136 +769,189 @@ group.spatial <- function(data, meta, date.col, province.col, rank, group,
   provinces[match(province, valid.abbrev)]
 }
 
-group.indicators <- function(otu1, otu2=NULL, meta, factor, rank,
+group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
                             thresholds = c(A=0.85, B=0.8, stat=0.8, p.value=0.05),
-                            labels=c("ITS1", "ITS2"), file=NULL, ext=NULL,
+                            all.indicators=TRUE, cex.x=NULL, file=NULL, ext=NULL,
                             height=12, width=12) {
   
   # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
   # but I think returning an explanatory error message is worthwhile
   
-  if (require("indicspecies")) {
-      indicspecies::multipatt
+  if ( require("indicspecies") ) {
+    indicspecies::multipatt
   } else {
     stop("package 'indicspecies' is required to use this function: try 'install.packages('indicspecies')'.")
   }
   
+  .valid.data(data, is.OTU=is.OTU)
   # we create some temporary text files in this function, so clean up:
   # (this removes all files containing mp_summary in their name in the R temp dir)
   on.exit(unlink(paste0(tempdir(), "/mp_summary*")))
   
-  valid.OTU(otu1, otu2)
-  .valid.rank(rank)
-  .valid.meta(otu1, otu2, meta)
-  save <- !is.null(file)
-  
-  if (is.null(otu2)) {
-    num.otus <- 1
-  } else {
-    num.otus <- 2
-  }
-  
-  .valid.labels(num.otus, labels)
-  
-  meta.factor <- .valid.factors(meta, factor, min.factors = 1, max.factors = 1)
+  save  <-  !is.null(file)
+  meta.factor  <-  .valid.factors(meta, factor, min.factors = 1, max.factors = 1)
+  meta.name  <-  names(meta.factor)
 
-  if (!is.numeric(thresholds) || length(thresholds) != 4L) {
-    stop("thresholds must be a numeric vector of length four (see ?indicators.plot for details).")
-  }
-  
-  meta.name <- names(meta.factor)
-   
+  labels <- names(data)
+  num.otus <- length(data)
   # to store the data we're about to generate
-  rows <- vector(length=num.otus, mode="list")
-  
-  index <- 1
-  for (otu in list(otu1, otu2)) {
-    # stop if not given otu2
-    if (is.null(otu)) { break }
+  rows <- list()
+
+  for ( i in 1:length(data) ) {
+    elem <- data[[i]]
+    if ( is.null(elem) ) { break }
+    label <- names(data)[i]
+
+    if ( is.OTU ) {
+      otu <- elem
+      valid.OTU(otu)
+      if ( !is.null(rank) ) {
+        .valid.rank(rank)
+        .valid.meta(otu, meta=meta)
+        abund  <-  tax.abund(otu, rank=rank)
+      } else if (is.null(rank) ) {
+        rank <- NULL
+        if ( length(data) > 1 ) {
+          stop("To identify otus as indicators, only provide ONE data set")
+        }
+        abund <- data.revamp(data=list(df=otu), is.OTU=is.OTU, 
+                          stand.method=NULL, 
+                          ranks=rank, top=NULL)[[1]]
+      }
+    } else {
+      abund <- elem      
+    }
+
+    abund <- abund[match(rownames(meta), rownames(abund)),]
+    if ( !identical(rownames(meta), rownames(abund)) ) {
+      stop("data and metadata do not have same subjects")
+    }
+
+    if (!is.numeric(thresholds) || length(thresholds) != 4L) {
+      stop("thresholds must be a numeric vector of length four (see ?indicators.plot for details).")
+    }
+   
+    abund.stand  <-  decostand(abund, method="total")
     
-    abund <- tax.abund(otu, rank=rank)
-    abund.stand <- decostand(abund, method="total")
-    
-    mp <- indicspecies::multipatt(abund.stand, meta.factor[[1]], control=how(nperm=999))
+    mp  <-  indicspecies::multipatt(abund.stand, meta.factor[[1]], control=how(nperm=999))
      
     # write the summary of the multi-level analysis to a temp file, which we read
-    tempfilename <- tempfile("mp_summary", fileext=".txt")
+    tempfilename  <-  tempfile("mp_summary", fileext=".txt")
     sink(file=tempfilename)
     summary(mp, indvalcomp=TRUE)
     sink()
     
-    indicators <- readLines(tempfilename)
+    indicators  <-  readLines(tempfilename)
     
     # the summary contains some human-friendly non-data lines we need to strip
     # this regex keeps only lines that have {number number number number},
     # since there are four numerical columns in the data (and none elsewhere)
     # this selects only the numerical data we want
-    matches <- grepl("([[:digit:]\\.]+[[:space:]]+){4}", indicators)
+    matches  <-  grepl("([[:digit:]\\.]+[[:space:]]+){4}", indicators)
     
     if (!any(matches)) {
       stop("no taxon groups were significant with the given parameters; try again with a lower taxon group and/or a different meta.factor.")
     }
     
-    indicators <- indicators[matches]
+    indicators  <-  indicators[matches]
     
     # split the rows at all whitespace, convert to dataframe
-    indicators.df <- data.frame(Group=character(), A=numeric(), B=numeric(),
+    indicators.df  <-  data.frame(Group=character(), A=numeric(), B=numeric(),
                                 stat=numeric(), p.value=numeric(),
                                 stringsAsFactors=FALSE)
     
-    pieces <- strsplit(indicators, "[[:space:]]+")
+    pieces  <-  strsplit(indicators, "[[:space:]]+")
     
     for (i in 1:length(pieces)) {
       # the [-6] removes the trailing significance code (which is just a human-friendly
       # display of the p-values)
-      indicators.df[i, ] <- pieces[[i]][-6]
+      indicators.df[i, ]  <-  pieces[[i]][-6]
     }
     
     for (i in 2:5) {
-      indicators.df[ , i] <- as.numeric(indicators.df[ , i])
+      indicators.df[ , i]  <-  as.numeric(indicators.df[ , i])
     }
    
     # get names of all taxon groups above the given thresholds
-    keep <- indicators.df[with(indicators.df, 
+    keep  <-  indicators.df[with(indicators.df, 
                                A >= thresholds[1] & B >= thresholds[2] & 
                                stat >= thresholds[3] & p.value <= thresholds[4])
                           , "Group", drop=TRUE]
-    
+    keep.all <- keep
     if (length(keep) == 0L) {
       stop("no taxon groups met all thresholds. Either relax your thresholds, or try again with each otu individually.")
-    }
-    
+    } else if ( all.indicators ) {
+      keep <- keep
+      if ( length(keep) > 12 ) {
+        warning(paste(length(keep), " indicators, consider to set all.indicators as FALSE or set more stringent thresholds", sep=""))
+      }
+    } else {
+      if ( length(keep) <= 12 ) {
+         warning(paste(length(keep), " indicators, will plot all", sep=""))
+         keep <- keep
+       } else {
+         warning(paste(length(keep), " indicators, will plot first 12 of them", sep=""))
+         keep <- keep[1:12]
+       }
+     }
+    # return(keep)
     # set up our data frame with all the data ggplot needs
-    abund.filtered <- data.frame(Sample=rownames(abund.stand),
+    abund.filtered  <-  data.frame(Sample=rownames(abund.stand),
                                  meta=meta.factor,
-                                 Region=rep(labels[index], times=dim(abund.stand)[1]), 
+                                 Region=rep(label, times=dim(abund.stand)[1]), 
                                  abund.stand[ , keep, drop=FALSE])
     
     # melt it & store the result
-    rows[[index]] <- melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
+    rows[[label]]  <-  melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
                                                     variable.name="Indicator",
                                                     value.name="Value")
     
-    index <- index + 1
   } # end otu for loop
   
-  data <- do.call(rbind, rows)
+  data  <-  do.call(rbind, rows)
   
   # we use as.formula/paste to create the faceting formula (otherwise we would 
   # have to type Region ~ meta.name, and facet_grid won't evaluate meta.name)
-  p <- ggplot(data, aes_string(x="Sample", y="Value", fill="Indicator")) +
+  p  <-  ggplot(data, aes_string(x="Sample", y="Value", fill="Indicator")) +
        geom_bar(stat="identity") +
        facet_grid(as.formula(paste("Region", "~", meta.name)),
                   scales="free_x", space="free_x") +
-       scale_fill_brewer(palette="Set3") +
-       ylab("Relative Abundance") +
-       theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), legend.position="bottom")
-  
+       ylab("Relative Abundance")
+  if ( is.null(cex.x) ) {
+     p <- p + theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1), 
+            legend.position="bottom")
+  } else {
+     p <- p + theme(axis.text.x = element_text(size=cex.x, angle = 45, 
+                    vjust = 1, hjust=1), 
+               legend.position="bottom")
+  }
+
+  cols.needed  <-  length(keep)
+  # color palette
+  col.pal <- c(brewer.pal(12, "Set3"), brewer.pal(8, "Accent"), .ram.pal(20))
+    
+  if (cols.needed > 12 && cols.needed <=40  ) {
+    # palette max is 12; so if we have more than 6 entries for otu1/2, we 
+    # need to manually construct a palette to use
+    col.func <- function(n){col.pal[1:n]}
+    p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+  } else if (cols.needed > 40  ) {
+    col.func  <-  colorRampPalette(col.pal)
+    p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
+                                 guide=guide_legend(direction="horizontal", ncol=5)) 
+  } else {
+    # otherwise, we can just use the Set3 palette from RColorBrewer
+    p  <-  p + scale_fill_brewer(palette="Set3",
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+  }
+    
   if (save) {
     .ggsave.helper(file, ext, width, height, plot=p)
   } else {
-    p
+    print(p)
   }
+  return(keep.all)
 }
 
 sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
@@ -1287,6 +1033,8 @@ sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
   
   meta.data <- melt(meta.data, id.vars=c(lat.col, long.col, names(factor)), 
                     variable.name="Region", value.name="Counts")
+  names(meta.data)[ncol(meta.data)] <- "Counts"
+  names(meta.data)[ncol(meta.data)-1] <- "Region"
   
   meta.data.agg <- aggregate(Counts ~ ., data=meta.data, FUN=sum)
   

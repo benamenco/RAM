@@ -1,31 +1,29 @@
-\name{OTU.subsets}
-\alias{OTU.subsets}
+\name{data.subset}
+\alias{data.subset}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Subset OTU  
+Subset OTU And Metadata
 }
 \description{
 This function subset OTUs and metadata based on user defined 
 values of metadata variables.   
 }
 \usage{
-OTU.subsets(otu1, otu2=NULL, meta, factor, value, and=TRUE)  
+data.subset(data, meta, factors="", values="", and=TRUE)  
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{otu1}{
-the first OTU table to be analyzed.  
-}
-  \item{otu2}{
-optional. the second OTU table to be used.  
+  \item{data}{
+a list of otu tables to be processed.
+See also \code{\link{RAM.input.formatting}}.  
 }
   \item{meta}{
 the metadata for subset.  
 }
-  \item{factor}{
+  \item{factors}{
 a vector containing metadata variables.     
 }
-  \item{value}{
+  \item{values}{
 a vector containing values of interest in metadata variables.    
 }
   \item{and}{
@@ -36,15 +34,9 @@ logical. Determine whether all conditions needs to be met or not.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-The value returned by this function is a list of length 2 or 3.  
-\itemize{
-\item If \code{otu2} is given: a list of length 3, containing the 
-      following members: 1) subset of otu1 otu1; 2) subset of otu2; 
-      3) subset of metadata.   
-\item If \code{otu2} is not given: output is a list of length 2, 
-      containing the following members: 1) subset of otu1 otu1; 
-      2) subset of metadata.    
-  }
+The value returned by this function is a list containing otu tables
+matching the filtering requirement. The last item in the output list
+is the associated new metadata table fit the requirement.  
 }
 
 %\references{
@@ -63,17 +55,24 @@ Wen Chen
 % ~~further links~~
 %}
 \examples{
-    data(ITS1, ITS2, meta)
-    names(meta)
-    factor <- c("City", "Harvestmethod")
-    value <- c("City1", "Method1")
+data(ITS1, ITS2, meta)
+names(meta)
+factors <- c("City", "Harvestmethod")
+values <- c("City1", "Method1")
 
-    sub <- OTU.subsets(otu1=ITS1, otu2=ITS2, meta=meta, 
-                           factor=factor, value=value, and=TRUE)
-    length(sub)
-    dim(sub[[1]])
-    dim(sub[[2]])
-    dim(sub[[3]])  
+# match all requirements, and=TRUE
+sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta, 
+                   factors=factors, values=values, and=TRUE)
+
+# match either of the requirements, and=FALSE
+sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta, 
+                   factors=factors, values=values, and=FALSE)
+\dontrun{
+names(sub)
+ITS1.sub <- sub[["ITS1"]]
+ITS2.sub <- sub[["ITS2"]]
+meta.sub <- sub[["meta"]]
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

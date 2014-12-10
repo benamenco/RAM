@@ -2,36 +2,28 @@
 \alias{OTU.diversity}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Summarize Diversity Indices for OTU Table
+Summarize Diversity Indices for OTU Tables
 }
 \description{
 These functions calculate diversity indices for all samples and 
 append outputs as new columns to metadata table. 
 }
 \usage{
-OTU.diversity(meta, otu1, otu2 = NULL, labels=NULL)
+OTU.diversity(data, meta)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
+  \item{data}{
+a list of OTU tables. 
+}
   \item{meta}{
 the metadata to append the outputs.
-}
-  \item{otu1}{
-the otu1 data to be processed.
-}
-  \item{otu2}{
-optional. The otu2 data to be processed.
-}
-  \item{labels}{
-optional. The labels for otu tables. 
 }
 }
 \details{
 This function summarize the following diversity indices: specnumber, 
 shannon, simpson, invsimpson, true diversity, evenness, chao and 
 ACE indices, for a given otu table. 
-The \code{otu2} argument is optional; if it is not specified, the 
-calculations will be done for only the \code{otu1} argument. 
 See \code{\link{diversity.indices}})
 }
 \value{
@@ -60,15 +52,15 @@ fragment length polymorphism data: insights from simulated microbial
 communities. Applied and Environmental Microbiology, 73(16), 5276-5283.
 }
 \author{
-Wen Chen and Joshua Simpson.
+Wen Chen.
 }
 %\note{
 %}
 \examples{
-    data(ITS1, ITS2, meta)
-
-    meta.diversity<-OTU.diversity(otu1=ITS1, otu2=ITS2, meta=meta, 
-                                  labels=c("ITS1", "ITS2"))
-    head(meta.diversity)
+data(ITS1, ITS2, meta)
+data=list(ITS1=ITS1, ITS2=ITS2)
+\dontrun{
+meta.diversity<-OTU.diversity(data=data, meta=meta) 
+}                              
 }
 \keyword{manip}

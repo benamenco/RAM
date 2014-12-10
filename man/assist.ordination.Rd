@@ -11,8 +11,10 @@ This function simplifies CCA and RDA analysis by abstracting away
 some of the complexity and returning a list of useful measures.
 }
 \usage{
-assist.cca(otu1, otu2 = NULL, meta, full = TRUE, exclude = NULL, rank)
-assist.rda(otu1, otu2 = NULL, meta, full = TRUE, exclude = NULL, rank)
+assist.cca(otu1, otu2 = NULL, meta, full = TRUE, exclude = NULL, 
+           rank, na.action=na.exclude)
+assist.rda(otu1, otu2 = NULL, meta, full = TRUE, exclude = NULL, 
+           rank, na.action=na.exclude)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -39,6 +41,10 @@ will be removed.
   \item{rank}{
 a character vector representing a rank. Must be in one of three 
 specific formats (see ?RAM.rank.formatting for help). 
+}
+  \item{na.action}{
+choice of one of the following: "na.fail", "na.omit" or "na.exclude",
+see \code{na.action} in \code{\link[vegan]{cca}} for detail.
 }
 }
 %\details{

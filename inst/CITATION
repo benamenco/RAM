@@ -1,11 +1,20 @@
-w <- person(given = "Wen", family = "Chen", email = "Wen.Chen@agr.gc.ca", 
-            role = "aut")
-j <- person(given = "Joshua", family = "Simpson", email = "jwvsimps@uwaterloo.ca",
-            role = "aut")
+citHeader("To cite 'RAM' package in publications use:")
 
-authors <- personList(w, j)
+citation(auto=meta)
 
-bibentry(bibtype = "Misc", author = authors,
-         title = "RAM: R Package for Amplicon-Based Metagenomics",
-         year = "2014",
+year <- sub("-.*", "", meta$Date) 
+note <- sprintf("R package version %s", meta$Version)  
+url <- "http://cran.r-project.org/web/packages/RAM/index.html"
+
+citEntry(entry = "misc", 
+         author = personList(as.person("Wen Chen"),
+                             as.person("Joshua Simpson")),
+         title = "RAM: r for Amplicon-Based Metagenomics",
+         year = year,
+         note = note,
+         url = url,
+         textVersion = NULL,
          institution = "Agriculture and Agri-Food Canada / Agriculture et Agroalimentaire Canada")
+
+citFooter("Thank you for using 'RAM'")
+

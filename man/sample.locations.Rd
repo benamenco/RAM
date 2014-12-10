@@ -112,7 +112,7 @@ Wen Chen and Joshua Simpson.
 data(ITS1, meta)
 
 \dontrun{
-sample.locations(ITS1, meta, factor=c(Crop="Crop"))}
+sample.locations(otu1=ITS1, otu2=ITS2, meta=meta, factor=c(Crop="Crop"))}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

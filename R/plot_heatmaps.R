@@ -1,11 +1,32 @@
-group.heatmap.simple <- function(data, meta=NULL, rank, row.factor=NULL,
+group.heatmap.simple <- function(data, is.OTU=TRUE, meta=NULL, rank="g", row.factor=NULL,
                                  top=NULL, count=FALSE, drop.unclassified=FALSE,
                                  dendro="none", file=NULL, ext=NULL, 
                                  width=9, height=8, leg.x=-0.08, leg.y=0) {
-  valid.OTU(data)
+
   save <- !is.null(file)
-  .valid.rank(rank)
-  .valid.meta(otu1=data, meta=meta)
+  if ( is.OTU && !is.null(rank) ) {
+    valid.OTU(data)
+    .valid.meta(otu1=data, meta=meta)
+    .valid.rank(rank)
+    data.tax <- tax.abund(data, rank=rank, drop.unclassified=drop.unclassified,
+                         count=count, top=top)  
+  } else if ( !is.OTU || is.null(rank) ) {
+    rank <- NULL    
+    if ( count ) {
+      stand.method=NULL
+    } else {
+      stand.method="total"
+    }    
+    data.tax <- data.revamp(data=list(df=data), is.OTU=is.OTU, 
+                          stand.method=stand.method, 
+                          ranks=rank, top=top)[[1]]
+  }
+  
+  data.tax <- data.tax[match(rownames(meta), rownames(data.tax)),]
+  if ( !identical(rownames(meta), rownames(data.tax)) ) {
+    stop("samples are not the same in metadata and community data")
+  }
+ 
   # we create a NULL col.factor for compatability with the internal
   # .valid.factor and .factor.settings functions
   # Note: a column factor is not valid here, as the factors are for samples
@@ -23,15 +44,12 @@ group.heatmap.simple <- function(data, meta=NULL, rank, row.factor=NULL,
     
     # if we have a row factor, but the length doesn't match the number of samples,
     # stop
-    if (dim(rfactor)[1] != dim(data)[2] - 1) {
-      stop(paste("The given data has", dim(data)[2] - 1, 
-                 "samples, but the row.factor has", dim(rfactor)[1], 
+    if (nrow(rfactor) != nrow(data.tax)) {
+      stop(paste("The given data has", nrow(data.tax) - 1, 
+                 "samples, but the row.factor has", nrow(rfactor), 
                  "points. These two values must match to continue."))
     }
   }
-  
-  data.tax <- tax.abund(data, rank=rank, drop.unclassified=drop.unclassified,
-                        count=count, top=top)
   
   if (!is.null(meta) && !all(rownames(data.tax) %in% rownames(meta))) {
     stop("the rownames for 'data' and 'meta' do not match.")
@@ -54,14 +72,16 @@ group.heatmap.simple <- function(data, meta=NULL, rank, row.factor=NULL,
   
   longest.row.label <- max(sapply(rownames(data.tax), FUN=nchar))
   longest.col.label <- max(sapply(colnames(data.tax), FUN=nchar))
+  longest.factor.label <- max(sapply(levels(factor(meta[[row.factor]])), FUN=nchar))
   
   hmap.args <- list(x=as.matrix(data.tax), dendrogram=dendro, trace = "none",
                     key = TRUE, keysize = 1, density.info = c("none"), 
                     col=gradient, xpd=NA, 
                     # we set the margins based on the length of the labels
                     ### (this probably needs more tweaking!)
-                    margins=c(0.6 * longest.col.label, 0.7 * longest.row.label))
+                    margins=c(0.6 * longest.col.label, 0.7 * longest.row.label ))
   
+  hmap.args$dendrogram <- dendro
   # order based on metadata, if appropriate
   if (given.rfactor) {
     # ensure that the order of the samples matches the order of the metadata
@@ -70,18 +90,26 @@ group.heatmap.simple <- function(data, meta=NULL, rank, row.factor=NULL,
     hmap.args$x <- as.matrix(data.tax)
     
     if (dendro == "row" || dendro == "both") {
-      warning("if metadata is provided, clustering will not occur and no dendrogram will be shown for the rows.")
-      
-      hmap.args <- c(hmap.args, Rowv=FALSE, Colv=FALSE)
-      hmap.args$dendrogram <- "none"
-      
+      # warning("if metadata is provided, clustering will not occur and no dendrogram will be shown for the rows.")
+      leg.args <- list(x="right", inset=c(leg.x, leg.y), xpd=NA, cex=0.7)
+      if ( dendro == "row" ) {
+        hmap.args <- c(hmap.args, Rowv=TRUE, Colv=FALSE)
+      } else {
+        hmap.args <- c(hmap.args, Rowv=TRUE, Colv=TRUE)
+      }
+      #hmap.args$dendrogram <- "none"
+      #leg.args <-list(x=locator(), xpd=NA)
+      hmap.args$margins <- c(0.6 * longest.col.label, 0.7 * longest.row.label +longest.factor.label)
     } else {
       hmap.args <- c(hmap.args, Colv=TRUE, Rowv=FALSE)
+      #leg.args <-list(x=locator(), xpd=NA)
+      leg.args <- list(x="left", inset=c(leg.x, leg.y), xpd=NA, cex=0.7)
+      hmap.args$margins <- c(0.6 * longest.col.label, 0.7 * longest.row.label )
     }
   }
   
   #leg.args <-list(x=locator(), xpd=NA)
-  leg.args <- list(x="left", inset=c(leg.x, leg.y), xpd=NA, cex=0.7)
+  # leg.args <- list(x="right", inset=c(leg.x, leg.y), xpd=NA, cex=0.7)
   
   args <- .factor.settings(rfactor, NULL, hmap.args, leg.args)
   hmap.args <- args[[1]]
@@ -100,78 +128,12 @@ group.heatmap.simple <- function(data, meta=NULL, rank, row.factor=NULL,
   invisible()
 }
 
-group.heatmap <- function(data, meta, rank, factors, 
-                          top=NULL, count=FALSE, drop.unclassified=FALSE,
-                          cut=NULL, file=NULL, ext=NULL, width=9, height=9) {
-  
-  # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
-  # but I think returning an explanatory error message is worthwhile
-  
-  if (require("Heatplus")) {
-      Heatplus::annHeatmap2
-      Heatplus::niceBreaks
-  } else {
-    stop("package 'Heatplus' is required to use this function")
-  #  source("http://bioconductor.org/biocLite.R"); biocLite("Heatplus")
-  }
-  
-  valid.OTU(data)
-  .valid.rank(rank)
-  .valid.meta(otu1=data, meta=meta)
-  save <- !is.null(file)
-
-  stand <- tax.abund(data, rank=rank, count=count,
-                     drop.unclassified=drop.unclassified, top=top)
-  
-  # generate a palette with a large gradient
-  base.cols <- brewer.pal(3, "YlOrRd")
-  # this next part is a hack: the niceBreaks call is taken from the annHeatmap2
-  # source; we use that call to calculate the minimum number of colours needed
-  # which means that the majority of the palette is used (looks nice, distinguishes best)
-  # Heatplus::niceBreaks
-  cols.needed <- length(Heatplus::niceBreaks(range(as.matrix(stand), na.rm = TRUE), 256)) - 1
-  cols <- colorRampPalette(base.cols)(cols.needed)
-  
-  pastels <- function(n) {brewer.pal(n, "Pastel1")}
-  
-  meta.factors <- .valid.factors(meta, factors)
-  
-  # find the longest group label, we will allocate margin space based on this
-  longest.label <- max(sapply(colnames(stand), FUN=nchar))
-  
-  ann.args <- list(x=as.matrix(stand), col=cols, scale="none",
-                   ann = list(Row = list(data = meta.factors)),
-                   legend = 3,
-                   labels = list(Col=list(nrow=longest.label * 0.7), 
-                                 Row=list(nrow=6)))
-  
-  # if the user wants to cut the dendrogram, add the correct arguments
-  if (!is.null(cut)) {
-    ann.args$cluster <- list(Row = list(cuth = cut, col = pastels))
-  }
-  
-  # call Heatplus::annHeatmap2
-  ann.plot <- do.call(Heatplus::annHeatmap2, ann.args)
-  
-  if (save) {
-    .get.dev(file, ext, height=height, width=width)
-  }
-  
-  plot(ann.plot)
-  
-  if (save) {
-    dev.off()
-  }
-  
-  invisible(ann.plot)
-}
-
-dissim.heatmap <- function(data, meta=NULL, row.factor=NULL, col.factor=NULL, 
+dissim.heatmap <- function(data, is.OTU=TRUE, meta=NULL, row.factor=NULL, col.factor=NULL, 
                            stand.method="chi.square", dissim.method="euclidean",
                            file=NULL, ext=NULL, height=8, width=9, leg.x=-0.05, leg.y=0) {
-  valid.OTU(data)
-  .valid.meta(otu1=data, meta=meta)
+  
   save <- !is.null(file)
+  
   given.rfactor <- !is.null(row.factor)
   given.cfactor <- !is.null(col.factor)
   
@@ -198,7 +160,17 @@ dissim.heatmap <- function(data, meta=NULL, row.factor=NULL, col.factor=NULL,
   num.factors <- given.rfactor + given.cfactor
   
   # calculate dissimilarity distances
-  otu.t <- transpose.OTU(data)
+  if ( is.OTU ) {
+    otu.t <- transpose.OTU(data)
+  } else {
+    otu.t <- data
+  }
+
+  otu.t <- otu.t[match(rownames(meta), rownames(otu.t)),]
+  if ( !identical(rownames(meta), rownames(otu.t)) ) {
+    stop("samples are not the same in metadata and community data")
+  }
+ 
   dissim <- decostand(otu.t, method=stand.method)
   distances <- vegdist(dissim, method=dissim.method)
   
@@ -253,3 +225,141 @@ dissim.heatmap <- function(data, meta=NULL, row.factor=NULL, col.factor=NULL,
   
   invisible()
 }
+
+
+group.heatmap <- function(data, is.OTU=TRUE, meta, rank, factors, 
+                          top=25, remove.unclassified=TRUE, 
+                          stand.method=NULL,
+                          dist.method="bray",
+                          hclust.method="average",
+                          dendro.row.status="yes",
+                          dendro.col.status="hidden",
+                          row.labels=TRUE, row.cex=1,
+                          cut=NULL, file=NULL, ext=NULL, 
+                          width=9, height=9) {
+  
+  # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
+  # but I think returning an explanatory error message is worthwhile
+  
+  if ( require("Heatplus") ) {
+    Heatplus::annHeatmap2
+    Heatplus::niceBreaks
+  } else {
+    stop("package 'Heatplus' is required to use this function: follow the instructions at http://www.bioconductor.org/packages/release/bioc/html/Heatplus.html to install it.")
+  }
+
+  save <- !is.null(file)
+  if ( is.OTU ) {
+    valid.OTU(data)
+    .valid.meta(otu1=data, meta=meta)
+    if ( !is.null(rank) ) {
+      .valid.rank(rank)
+       rank <- rank
+       # obtain tax.abund matrix in counts, remain all groups, including unclassified ones.
+       tax <- tax.abund(data, rank=rank, drop.unclassified=FALSE, count=TRUE )
+    } else {
+      rank <- NULL
+      tax <- data.revamp(data=list(df=data), is.OTU=is.OTU, 
+                          stand.method=NULL,ranks=rank, top=NULL)[[1]]
+    }
+  } else {
+    rank <- NULL    
+    tax <- data
+  }
+
+  tax <- tax[match(rownames(meta), rownames(tax)),]
+  if ( !identical(rownames(meta), rownames(tax)) ) {
+    stop("samples are not the same in metadata and community data")
+  }
+ 
+  # order the taxa
+  tax <- tax[, order(colSums(tax), decreasing=TRUE)]
+
+  if(is.null(stand.method)) {
+    stand <-tax
+  } else {
+    stand <- decostand(tax, stand.method)
+  }
+  
+  # drop.unclassified using blacklist
+  if(remove.unclassified && !is.null(rank) ) {
+    remove.pat <- gsub(.get.rank.pat(rank), "", paste0(.blacklist(.get.rank.pat(rank)), "|no_taxonomy"))
+    stand <- stand[ , !grepl(remove.pat, names(stand), ignore.case=TRUE), drop=FALSE]
+  } else {
+    stand<-stand
+  }
+
+  if ( ncol(stand) <= top ) {
+    top <- ncol(stand)
+  } else {
+    top <- top
+  }
+
+  stand <- stand[, 1:top]
+  
+  row.clus <- hclust(vegdist(stand, method=dist.method), hclust.method)
+  col.clus <- hclust(vegdist(t(stand), method=dist.method), hclust.method)
+  
+  # generate a palette with a large gradient
+  base.cols <- brewer.pal(3, "YlOrRd")
+  # this next part is a hack: the niceBreaks call is taken from the annHeatmap2
+  # source; we use that call to calculate the minimum number of colours needed
+  # which means that the majority of the palette is used (looks nice, distinguishes best)
+  # cols.needed <- length(Heatplus::niceBreaks(range(as.matrix(stand), na.rm = TRUE), 256)) - 1
+  cols.needed <- length(Heatplus::niceBreaks(range(as.matrix(stand), na.rm = TRUE), 256)) - 1
+  cols <- colorRampPalette(base.cols)(cols.needed)
+  
+  #pastels <- function(n) {brewer.pal(n, "Pastel1")}
+  col.pal <- c(brewer.pal(9, "Pastel1"), brewer.pal(8, "Accent"), .ram.pal(20))
+  pastels <- function(n){col.pal[1:n]}
+  
+  meta.factors <- .valid.factors(meta, factors)
+  
+  # find the longest group label, we will allocate margin space based on this
+  longest.label <- max(sapply(colnames(stand), FUN=nchar))
+
+  if(!is.null(stand.method)) {
+    scale=c("none")
+  } else {
+    scale=c("row")
+  }
+
+  ann.args <- list(x=as.matrix(stand), col=cols, scale=scale,
+                   ann = list(Row = list(data = meta.factors)),
+                   legend = 3,
+       labels = list(Col=list(nrow=longest.label * 0.4), 
+                                 Row=list(nrow=6)),
+       dendrogram=list(Row=list(dendro=as.dendrogram(row.clus), status=dendro.row.status),
+           Col=list(dendro=as.dendrogram(col.clus), status=dendro.col.status))
+       )
+  
+  if ( row.labels ) {
+    ann.args$labels = list(Col=list(nrow=longest.label * 0.4), 
+                                 Row=list(nrow=6, cex=row.cex))
+  } else {
+    ann.args$labels = list(Col=list(nrow=longest.label * 0.4), 
+                                 Row=list(labels=NULL,nrow=6, cex=row.cex))
+  }
+  
+  # if the user wants to cut the dendrogram, add the correct arguments
+  if (!is.null(cut)) {
+    ann.args$cluster <- list(Row = list(cuth = cut, col = pastels))
+  }
+  
+  ann.plot <- do.call(Heatplus::annHeatmap2, ann.args)
+  #ann.plot <- do.call(annHeatmap2, ann.args)
+  
+  if (save) {
+    .get.dev(file, ext, height=height, width=width)
+  }
+  
+  plot(ann.plot)
+  # ann.plot
+  
+  if (save) {
+    dev.off()
+  }
+  
+  invisible(ann.plot)
+}
+

@@ -1,58 +1,189 @@
-$Date: 2014-10-22 14:25:44 +0200 (Wednesday, 22 Oct 2014) $
+$Date: 2014-12-10 12:06:44 +0200 (Wednesday, 10 Dec 2014) $
 
 RAM RELEASE VERSIONS at http://cran.r-project.org/
 
-Version 1.1.0 (released October 22, 2014)
+Version 1.2.0 (released December 10, 2014)
 
-	* tax.abund: fixed drop.unclassified option.
+    * fread.OTU: use data.table::fread for reading in large data 
+      set.
+   
+    * fread.meta: use data.table::fread for reading in large data 
+      set.
 
-	* group.abundance: plot with adjusted and aligned x axis labels. 
+    * write.data: write datasets to a csv file of a valid file
+      path.
+
+    * write.OTU: removed and replaced by write.data function
+
+    * match.data: to match samples in ecology datasets and metadata
+      set. Only samples that present in both will be kept and 
+      reordered to match all datasets.
+
+    * RAM.input.formatting: describe how the ecology data should 
+      be used as inputs for comparison functions. 
+
+    * OTU.recap: returns a list to describe the percent of classifed
+      otus and sequences at each given taxonomy ranks and visualize
+      the output in a barplot.
+
+    * OTU.revamp: returns a list to describe the percent of classifed
+      otus and sequences at each given taxonomy ranks and visualize
+      the output in a barplot.
+
+    * get.rank: fixed a bug that keeping otus without identified 
+      taxon name at a given rank; e.g. g__ or g__;
+
+    * transpose.LCA: transpose OTU tables with each OTU being 
+      annotated by its LCA.
+
+    * theme_ggplot: provide two ggplot themes RAM.color and R.border
+      for customized fancy plots.
+
+    * read.OTU: now can import both "," or "\t" delimited files.
+
+    * read.meta: now can import both "," or "\t" delimited files.
+
+    * core.OTU: core.OTU in this version shows LCA of core OTUs. 
+
+    * OTU.recap: now can handle multiple otu tables at one run and
+      do a barplot to visualize the output.
+  
+    * combine.OTU: combine otus for the same sample. Suggested 
+      to be use for bacterial 16S datasets. 
+
+    * filter.META: Select METADATA Variables and remove the ones
+      that only have one level, neither numeric nor factor and /
+      or with missing data.
+
+    * .valid.data: check whether ecology data sets have same 
+ 
+    * assist.ado: perform ADONIS Analysis for ecology data sets. 
         
-        * tax.split: previously used a function concate.split from package
-           splitstackshape, which is deprecated. Replaced with new function 
-           in RAM \code{split.col}.  
+    * filter.Taxa: filter taxonomic abundance matrices by total 
+      counts or maximum relative abundance.	
 
-        * group.indicators: RAM::tax.split.   
+    * data.clust: plot hierarchical clusters of samples based on 
+      ecology data set. 
 
-        * tax.abund: fixed the bug that fails to remove unclassified 
-          taxon groups in defined blacklist when drop.unclassified is
-          set as TRUE. 
+    * META.clust: Plot Hierarchical Cluster Of samples based on 
+      metadata
 
-        * group.abundance: needs \code{tax.abund} when plot relative 
-           abundance of top taxon groups at each ranks. Now it correctly 
-           remove unclassified taxon groups when drop.unclassified option 
-           is set TRUE.
+    * assist.NB: negative binomial test of seleted otuID or 
+      taxon name.
+
+    * envis.NB: plot the negative binomial model for selected 
+      otuID or taxon name.
+
+    * group.rich: Barplot of richness for a given metadata 
+      variable.
+
+    * group.spec: Boxplot of richness for a given metadata 
+      variable.
+
+    * OTU.ord: visualize cca/rda analysis on otus
+
+    * Taxa.ord: visualize cca/rda analysis on taxa groups at a 
+      given rank.
+
+    * group.Taxa.box: boxplot of taxa distribution among groups.
+
+    * group.Taxa.bar: barplot of taxa distribution among groups.
+
+    * group.abunda.taxa: barplot of selected taxa in each group.
+
+    * group.venn: venn diagrams for taxa shared by different 
+      communities
+
+    * shared.Taxa: summarize taxa shared by all samples
+
+    * valid.taxonomy: check whether the format of the taxonomy 
+      lineages in the otu tables are supported by RAM
+ 
+    * reformat.taxonomy: reformat the taxonomy 
+      lineages in the otu tables that supported by RAM
+
+    * sample.map: plot the number of samples collected from 
+      each location. For plotting distant sampling sites.
+
+    * sample.site: alternative view of RAM functons sample.map and 
+      sample.locations, suitable for plot closely located sampling 
+      sites.
+
+    * group.diversity: plot diversity indices among different 
+      groups.
+    
+    * group.heatmap: add standardize and dis.method options
+
+    * core.OTU.rank: changed the name of core.OTU in v1.1.0 
+      to core.OTU.rank
+
+    * group.abundance: can process more than 2 OTU tables now.
+
+    * group.top.number: can process more than 2 OTU tables now.
+
+    * group.top.percent: can process more than 2 OTU tables now.
+
+    * group.indicators: can process more than 2 OTU tables now.
+
+    * RAM.pal: generate customized color patterns.
+
+    * The third public version.
+
+Version 1.1.0 (released October 20, 2014)
+
+    * tax.abund: fixed drop.unclassified option.
+
+    * group.abundance: plot with adjusted and aligned x axis 
+          labels. 
+        
+    * tax.split: previously used a function concate.split from 
+          package splitstackshape, which is deprecated. Replaced 
+          with new function in RAM \code{split.col}.  
+
+    * group.indicators: RAM::tax.split.   
+
+    * tax.abund: fixed the bug that fails to remove unclassified 
+          taxon groups in defined blacklist when drop.unclassified 
+          is set as TRUE. 
+
+    * group.abundance: needs \code{tax.abund} when plot relative 
+          abundance of top taxon groups at each ranks. Now it 
+          correctly remove unclassified taxon groups when 
+          drop.unclassified option is set TRUE.
       
-        * tax.fill: failed to recognize unclassified taxon groups in defined
-          blacklist and replace them with the OTUs lowest comman ancestor. 
+    * tax.fill: failed to recognize unclassified taxon groups 
+          in defined blacklist and replace them with the OTUs lowest 
+          comman ancestor. 
       
-        * OTU.diversity: calculates most used diversity indices for each samples 
-          based on OTU tables.
+    * OTU.diversity: calculates most used diversity indices for 
+          each samples based on OTU tables.
 
-        * core.OTU: summarizes most prevelant otus.
+    * core.OTU: summarizes most prevelant otus.
 
-        * core.Taxa: summarizes most prevelant taxon groups.
+    * core.Taxa: summarizes most prevelant taxon groups.
 
-        * group.OTU: plot function for the distribution of selected otus.
+    * group.OTU: plot function for the distribution of selected 
+          otus.
 
-        * filter.OTU: function to subset OTUs by either total 
+    * filter.OTU: function to subset OTUs by either total 
           count or relative abundance.
      
-        * OTU.recap: summarizes classified OTUs at each taxonomic ranks.
+    * OTU.recap: summarizes classified OTUs at each taxonomic 
+          ranks.
      
-        * .get.rank.name: internal function to generate the name 
+    * .get.rank.name: internal function to generate the name 
           of a given taxonomic rank.
     
-        * LCA.OTU: function to obtain LCA for each otu. Unclassified taxa 
-          are removed and the lowest rank that an otu can be assigned to is 
-          returned. 
+    * LCA.OTU: function to obtain LCA for each otu. Unclassified 
+          taxa are removed and the lowest rank that an otu can be 
+          assigned to is returned. 
       
-        * correlation: plot function to display correlation coefficient 
-          (or covariance) among taxa at a give rank and / or numeric variables 
-          of metadata. 
+    * correlation: plot function to display correlation coefficient 
+          (or covariance) among taxa at a give rank and / or numeric 
+          variables of metadata. 
             
-        * col.splitup: function to split a column of a data frame by 
-          predefined separator.
+    * col.splitup: function to split a column of a data frame 
+          by predefined separator.
 	
 
 	* The second public version.

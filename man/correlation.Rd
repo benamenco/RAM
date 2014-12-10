@@ -12,7 +12,7 @@ rank and / or numeric variables of metadata.
 correlation(data=NULL, is.OTU=TRUE, meta=NULL, rank="g", 
             sel=NULL, sel.OTU=TRUE, data.trans=NULL, 
             method="pearson", main=NULL, file=NULL, 
-            width=8, height=8)   
+            ext=NULL, width=8, height=8)   
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -62,6 +62,10 @@ a character string. The title of the plot.
 the file path where the image should be created 
 (see ?RAM.plotting).  
 }
+  \item{ext}{
+filename extension, the type of image to be saved to.
+(see ?RAM.plotting).  
+}
   \item{height}{
 the height of the image to be created (in inches).  
 }
@@ -107,7 +111,13 @@ data(ITS1, meta)
 # only plot the first 10 OTUs
 sel <- rownames(ITS1)[1:10]
 correlation(data=ITS1, meta=meta, is.OTU=TRUE, sel.OTU=TRUE, 
-            sel=sel, rank="g")
+            sel=sel)
+\dontrun{
+sel <- c("Fusarium", "Cladosporium", "Alternaria")
+correlation(data=ITS1, meta=meta, is.OTU=TRUE, sel.OTU=FALSE, 
+            sel=sel, rank="g", data.trans="total", 
+            file="test.pdf", ext="pdf")
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

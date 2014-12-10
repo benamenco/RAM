@@ -15,7 +15,8 @@ percent.classified(data, ranks=c("f","g"))
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-the OTU table to be processed.
+a list of OTU tables to be processed. 
+See also \code{\link{RAM.input.formatting}}
 }
   \item{ranks}{
 a vector containing the taxonomic ranks you are interested in 
@@ -44,10 +45,10 @@ Wen Chen and Joshua Simpson.
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
-data(ITS1)
-
-# find what percent of OTUs classified at genus level
-percent.classified(ITS1, ranks=c("f","g"))
+data(ITS1, ITS2)
+data <- list(ITS1=ITS1, ITS2=ITS2)
+# find what percent of OTUs classified at family and genus levels
+percent.classified(data=data, ranks=c("f","g"))
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

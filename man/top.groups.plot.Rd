@@ -15,35 +15,39 @@ OTUs with relative abundance above \code{top} percent
 class, order, family, and genus.
 }
 \usage{
-group.top.number(otu1, otu2=NULL, top=10, drop.unclassified=FALSE, 
-                 labels=c("ITS1", "ITS2"), 
-                 file=NULL, ext=NULL, height=8, width=16, 
+group.top.number(data, top=10, ranks=c("p","c","o","f","g"), 
+                 drop.unclassified=FALSE, cex.x=NULL,
+                 main=NULL,file=NULL, ext=NULL, height=8, width=16, 
                  bw=FALSE, ggplot2=TRUE)
                 
-group.top.percent(otu1, otu2=NULL, top=10, drop.unclassified=FALSE, 
-                  labels=c("ITS1", "ITS2"), 
-                  file=NULL, ext=NULL, height=8, width=16, 
-                  bw=FALSE, ggplot2=TRUE)
+group.top.percent(data, top=10, ranks=c("p","c","o","f","g"),
+                  drop.unclassified=FALSE, cex.x=NULL,
+                  main=NULL, file=NULL, ext=NULL, height=8, 
+                  width=16, bw=FALSE, ggplot2=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{otu1}{
-the first OTU table to be used.
-}
-\item{otu2}{
-the second OTU table to be used.
+  \item{data}{
+a list of OTU tables.
 }
 \item{top}{
 the number of OTUs to select (for \code{top.number}), or the minimum 
 relative abundance threshold to use for selecting OTUs 
 (for \code{top.percent}).
 }
+  \item{ranks}{
+a vector of the taxonomic ranks.
+See also \code{\link{RAM.rank.formatting}}
+}
   \item{drop.unclassified}{
 logical. Should OTUs labelled "unclassified" or missing 
 classification at the given taxonomic rank be excluded?
 }
-\item{labels}{
-a character vector giving one label per OTU.
+\item{cex.x}{
+optional. The size of the x axis names.
+}
+\item{main}{
+the title of the plot
 }
   \item{file}{
 the file path where the image should be created (see ?RAM.plotting).
@@ -95,12 +99,13 @@ Wen Chen and Joshua Simpson.
 data(ITS1, ITS2)
 
 # plots the top 10 OTUs (by default) at five ranks
-group.top.number(ITS1, ITS2) 
+group.top.percent(data=list(ITS1=ITS1, ITS2=ITS2), top=10) 
 
 # plots all OTUs w/ relative abundance > 10\% (as specified) at 
 # five ranks and saves the result as a .tiff file 
 # (only using ITS1 data)
-group.top.percent(ITS1, top=10, file="my/file/path", ext="tiff")}
+group.top.percent(data=list(ITS1=ITS1, ITS2=ITS2), top=10, 
+                 file="my/file/path", ext="tiff")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

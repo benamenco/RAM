@@ -10,14 +10,24 @@ rank. Additionally, it can display metadata for the samples as
 annotations along the rows of the heatmap.
 }
 \usage{
-group.heatmap(data, meta, rank, factors, 
-              top=NULL, count=FALSE, drop.unclassified=FALSE,
-              cut=NULL, file=NULL, ext=NULL, width=9, height=9)
+group.heatmap(data, is.OTU=TRUE, meta, rank, factors, 
+              top=25, remove.unclassified=TRUE, 
+              stand.method=NULL,
+              dist.method="bray",
+              hclust.method="average",
+              dendro.row.status="yes",
+              dendro.col.status="hidden",
+              row.labels=TRUE, row.cex=1,
+              cut=NULL, file=NULL, ext=NULL, 
+              width=9, height=9)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
 the OTU table to be used.
+}
+  \item{is.OTU}{
+logical. Whether or not the data is an OTU table.
 }
   \item{meta}{
 the metadata table to be used.
@@ -34,13 +44,43 @@ table to be used (see \code{\link{RAM.factors}}).
 the number of groups to select, starting with the most abundant. 
 If \code{NULL}, all are selected.
 }
-\item{count}{
-logical. If \code{TRUE}, the numerical counts for each group will 
-be shown; otherwise the relative abundance will be shown.
-}
-  \item{drop.unclassified}{
+  \item{remove.unclassified}{
 logical. Define whether OTUs labelled "unclassified" or missing 
 classification at the given taxonomic rank should be excluded.
+}
+  \item{stand.method}{
+optional. Data standardization methods specified in \code{\link[vegan]{decostand}}.
+}
+  \item{dist.method}{
+distance matrix calculation methods specified \code{\link[vegan]{vegdist}}.
+}
+  \item{hclust.method}{
+the agglomeration methods specified in \code{\link{hclust}}. 
+This should be unambiguous abbreviation of one of the following: 
+'ward.D', 'ward.D2', 'single', 'complete', 'average', 'mcquitty', 
+'median' or 'centroid'.
+}
+  \item{dendro.row.status}{
+whether or not to use the dendrogram to re-order the rows. 
+It should be one of the following: 'yes' that use the dendrogram 
+to re-order the rows/columns and display the dendrogram; 'hidden'
+means re-rorder, but do not display; 'no' means do not use the 
+dendrogram at all.
+See also \code{\link[Heatplus]{annHeatmap2}}
+}
+  \item{dendro.col.status}{
+whether or not to use the dendrogram to re-order the columns. 
+It should be one of the following: 'yes' that use the dendrogram 
+to re-order the rows/columns and display the dendrogram; 'hidden'
+means re-rorder, but do not display; 'no' means do not use the 
+dendrogram at all.
+See also \code{\link[Heatplus]{annHeatmap2}}
+}
+  \item{row.labels}{
+logical. Whether or not to plot the row labels.
+}
+  \item{row.cex}{
+the size of row labels if \code{row.labels} is \code{TRUE}
 }
   \item{cut}{
 the height at which to cut the sample tree, this will create 
@@ -89,9 +129,14 @@ Wen Chen and Joshua Simpson.
 }
 \examples{
 data(ITS1, meta)
+library("Heatplus")
+library("RColorBrewer")
 
-group.heatmap(ITS1, meta, rank="c", factors=c(City="City", 
-              Plot="Plots"))
+group.heatmap(ITS1, is.OTU=TRUE, meta=meta, rank="c", factors=c(Crop="Crop", 
+              City="City"), stand.method="chi", dist.method="euc", 
+              hclust.method="mcquitty", cut=0.5)
+\dontrun{
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -2,6 +2,178 @@
 \title{RAM News}
 \encoding{UTF-8}
 
+\section{Changes in version 1.2.0}{
+
+  \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release with new functions and features. In
+       the same we also fix some issues of plot functions.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item Fixed a bug in Function \code{get.rank} that keeping 
+     otus without identified taxon name at a given rank; e.g. 
+     'g__' or 'g__;'
+    
+    }
+  } % bug fixes
+
+
+  \subsection{NEW FUNCTIONS}{
+    \itemize{
+
+      \item Function \code{match.data: to match samples in ecology 
+      datasets and metadata set. Only samples that present in both 
+      will be kept and  reordered to match all datasets.
+ 
+      \item Function \code{OTU.revamp: returns a list to describe 
+      the percent of classifed  otus and sequences at each given 
+      taxonomy ranks and visualize  the output in a barplot.
+
+      \item Function \code{transpose.LCA: transpose OTU tables with 
+       each OTU being annotated with its LCA.
+
+      \item Function \code{theme_ggplot: provide two ggplot themes 
+      RAM.color and R.border for customized fancy plots.
+
+      \item Function \code{combine.OTU: combine otus for the same 
+      sample. Suggested  to be use for bacterial 16S datasets. 
+
+      \item Function \code{filter.META: Select METADATA Variables 
+      and remove the ones  that only have one level, neither numeric 
+      nor factor and /  or with missing data.
+
+      \item Function \code{.valid.data: check whether ecology data 
+      sets have same  
+
+      \item Function \code{assist.ado: perform ADONIS Analysis for 
+      ecology data sets.  
+
+      \item Function \code{filter.Taxa: filter taxonomic abundance 
+      matrices by total  counts or maximum relative abundance.	
+
+      \item Function \code{data.clust: plot hierarchical clusters 
+      of samples based on  ecology data set. 
+
+      \item Function \code{META.clust: Plot Hierarchical Cluster 
+      Of samples based on  metadata
+
+      \item Function \code{assist.NB: negative binomial test of 
+      seleted otuID or  taxon name.
+
+      \item Function \code{envis.NB: plot the negative binomial 
+      model for selected  otuID or taxon name.
+
+      \item Function \code{group.rich: Barplot of richness for a 
+      given metadata  variable.
+
+      \item Function \code{group.spec: Boxplot of richness for a 
+      given metadata  variable.
+
+      \item Function \code{OTU.ord: visualize cca/rda analysis on 
+      otus 
+
+      \item Function \code{Taxa.ord: visualize cca/rda analysis on 
+      taxa groups at a  given rank.
+
+      \item Function \code{group.Taxa.box: boxplot of taxa 
+      distribution among groups.
+
+      \item Function \code{group.Taxa.bar: barplot of taxa 
+      distribution among groups.
+
+      \item Function \code{group.abunda.taxa: barplot of selected 
+      taxa in each group.
+
+      \item Function \code{group.venn: venn diagrams for taxa 
+      shared by different  communities
+
+      \item Function \code{shared.Taxa: summarize taxa shared by 
+      all samples
+
+      \item Function \code{valid.taxonomy: check whether the format 
+      of the taxonomy  lineages in the otu tables are supported by RAM
+
+      \item Function \code{reformat.taxonomy: reformat the taxonomy  
+      lineages in the otu tables that supported by RAM
+
+      \item Function \code{sample.map: plot the number of samples 
+      collected from  each location. For plotting distant sampling 
+      sites.
+
+      \item Function \code{sample.site: alternative view of RAM 
+      functons sample.map and  sample.locations, suitable for plot 
+      closely located sampling  sites.
+
+      \item Function \code{group.diversity: plot diversity indices 
+      among different  groups.
+
+      \item Function \code{RAM.pal: generate customized color pattern.
+
+    }
+  } % new functions
+
+  \subsection{NEW FEATURES}{
+    \itemize{
+
+      \item Function \code{read.OTU} now can import both "," or 
+     "\t" delimited files.
+
+      \item Function \code{read.meta} now can import both "," or 
+     "\t" delimited files.
+
+      \item Function \code{OTU.recap} returns a list to describe 
+      the percent of classifed otus and sequences at each given 
+      taxonomy ranks and visualize the output in a barplot.
+
+      \item Added standardize and dist.method options to Function 
+      \code{group.heatmap}.
+
+      \item Function \code{group.abundance} can process more than 
+      2 OTU tables now.
+
+      \item Function \code{group.top.number} can process more than 
+      2 OTU tables now.
+
+      \item Function \code{group.top.percent} can process more than 
+      2 OTU tables now.
+
+      \item Function \code{group.indicators} can process more than 
+      2 OTU tables now.
+
+    }
+
+  } % new features
+  
+%  \subsection{INSTALLATION AND BUILDING}{
+%    \itemize{
+
+%      \item Function 
+      
+%      \item Function 
+
+%    }
+%  } % installation and building
+  
+  \subsection{DEPRECATED}{
+
+    \itemize{
+
+      \item Function \code{write.OTU} removed and replaced by 
+      \code{write.data} function
+      
+     }   
+  } % deprecated
+
+} % version 1.2.0
+
 \section{Changes in version 1.1.0}{
 
   \subsection{GENERAL}{

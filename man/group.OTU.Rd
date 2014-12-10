@@ -5,15 +5,16 @@
 Plot Distribution of OTUs
 }
 \description{
-This function plot the distributon of otus in each level of a given metadata 
-variable. The plot can be boxplot of barplot. The boxplot shows the range of 
-relative abundance of a given otuID in each level of metadata category.  The 
-barplot shows the relative abundance of the total counts of a given otuID in 
+This function plot the distributon of otus in each level of a 
+given metadata variable. The plot can be boxplot of barplot. 
+The boxplot shows the range of relative abundance of a given 
+otuID in each level of metadata category.  The barplot shows the 
+relative abundance of the total counts of a given otuID in 
 each level of metadata category. 
 }
 \usage{
 group.OTU(otu, rank="g", otuIDs="", meta, meta.factor="", 
-         boxplot=TRUE, log=FALSE, main=NULL, file=NULL, ext=NULL, 
+         boxplot=TRUE, main="", file=NULL, ext=NULL, 
          height=8, width=16)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -37,11 +38,6 @@ the metadata qualitative variable
   \item{boxplot}{
 logical. If \code{TRUE}, generate boxplot; 
 otherwise generate barplot.
-}
-  \item{log}{
-logical. If \code{TRUE}, the x-axis (relative abundance) is log 
-transformed, suggest to use with boxplot only; otherwise the x-axis 
-is relative abundance.
 }
   \item{main}{
 title of the plot.
@@ -84,21 +80,22 @@ from the function \code{\link{decostand}}.
 \code{\link{ggplot}}
 }
 \examples{
-    data(ITS1, meta)
+data(ITS1, meta)
 
-    # otuIDs
-    otuIDs=rownames(ITS1)[1:10]
+# otuIDs
+otuIDs=rownames(ITS1)[1:10]
 
-    # names(meta)
+# names(meta)
+theme <- RAM.color()
+group.OTU(otu=ITS1, rank="g", otuIDs=otuIDs, 
+        meta=meta, meta.factor="City", boxplot=TRUE,  
+        file=NULL, ext=NULL) + theme
 
-    group.OTU(otu=ITS1, rank="g", otuIDs=otuIDs, 
-               meta, meta.factor="City", boxplot=TRUE, log=TRUE, 
-               file=NULL, ext=NULL, height=8, width=16, main=NULL)
-
-    group.OTU(otu=ITS1, rank="g", otuIDs=otuIDs, 
-               meta, meta.factor="City", boxplot=FALSE, 
-               log=FALSE, file=NULL, ext=NULL, 
-               height=8, width=16, main=NULL)
+\dontrun{
+group.OTU(otu=ITS1, rank="g", otuIDs=otuIDs, 
+               meta=meta, meta.factor="City", boxplot=FALSE, 
+               file=NULL) + theme
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

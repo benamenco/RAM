@@ -10,7 +10,7 @@ optional parameters, and creates a heatmap showing the abundance
 of the OTUs at the given taxonomic rank for each sample. 
 }
 \usage{
-group.heatmap.simple(data, meta=NULL, rank, row.factor=NULL,
+group.heatmap.simple(data, is.OTU=TRUE, meta=NULL, rank, row.factor=NULL,
                      top=NULL, count=FALSE, drop.unclassified=FALSE,
                      dendro="none", file=NULL, ext=NULL, 
                      width=9, height=8, leg.x=-0.08, leg.y=0)
@@ -19,6 +19,9 @@ group.heatmap.simple(data, meta=NULL, rank, row.factor=NULL,
 \arguments{
   \item{data}{
 the OTU table to be used.
+}
+  \item{is.OTU}{
+logical. Whether or not the data is an OTU table.
 }
   \item{meta}{
 the metadata table to be used.  
@@ -111,14 +114,16 @@ data(ITS1, meta)
 # plot the abundance of all observed classes for each sample, displaying 
 # it to the screen and adding a dendrogram on the column and the Collector 
 # on the row 
-group.heatmap.simple(ITS1, meta, rank="c", dendro="column",
-		     row.factor=c(City="City"))
+group.heatmap.simple(ITS1, is.OTU=TRUE, meta=meta, 
+                     row.factor=c(Crop="Crop"), dendro="row", 
+                     rank="g", top=10, drop.unclassified=TRUE, 
+                     leg.x=-0.06)
 
 \dontrun{
 # plot the genus for all OTUs, add a dendrogram to the row and column, 
 # and save the plot in path.tiff
-group.heatmap.simple(ITS1, meta, rank="genus", dendro="both",
-		     file="my/file/path")}
+group.heatmap.simple(ITS1, is.OTU=TRUE, meta=meta, rank="genus", 
+                     dendro="both", file="my/file/path")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

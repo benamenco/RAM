@@ -5,8 +5,8 @@
 Summary of Shared OTUs Across ALL Subjects
 }
 \description{
-This function consumes an OTU table and returns a list summarizing 
-information about the presence of the OTUs in that table.
+This function consumes OTU tables and returns a list summarizing 
+information about the presence of the OTUs in samples.
 }
 \usage{
 shared.OTU(data)
@@ -14,7 +14,7 @@ shared.OTU(data)
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-the OTU table to be analyzed.
+a list of OTU tables to be analyzed.
 }
 }
 %\details{
@@ -48,8 +48,10 @@ from the function \code{\link{decostand}}.
 }
 \examples{
 data(ITS1)
-
-shared.OTU(ITS1)
+\dontrun{
+shared <- shared.OTU(data=list(ITS1=ITS1))
+shared <- shared.OTU(data=list(ITS1=ITS1, ITS2=ITS2))
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

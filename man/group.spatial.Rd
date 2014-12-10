@@ -106,7 +106,8 @@ data(ITS1, meta)
 group.spatial(ITS1, meta, date.col="Harvestdate", 
               province.col="Province", rank="p", 
               group=c("Ascomycota", "Basidiomycota"), 
-              breaks=2)}
+              breaks=2)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -10,13 +10,14 @@ rank that present in a pre-defined percent of samples in each
 level of a given metadata category.
 }
 \usage{
-core.Taxa(data, is.OTU=FALSE, rank="g", meta, 
-          meta.factor="", percent=1)
+core.Taxa(data, is.OTU=FALSE, rank="g", 
+         drop.unclassified=TRUE,
+         meta, meta.factor="", percent=1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
-either an OTU table or a taxonomy abundance matrix to be analyzed.
+a list of OTU tables or taxonomy abundance matrices to be analyzed.
 }
   \item{is.OTU}{
 logical. If \code{TRUE}, data is an OTU table;
@@ -25,6 +26,10 @@ otherwise a taxonomy abundance matrix should be provided.
   \item{rank}{
 the taxonomic rank of classification (see ?RAM.rank.formatting for
 formatting details).
+}
+  \item{drop.unclassified}{
+logical, whether or not exclude unclassified groups.
+See also \code{\link{tax.abund}}
 }
   \item{meta}{
 the metadata table to be analyzed.
@@ -67,17 +72,19 @@ from the function \code{decostand}.
 \examples{
 data(ITS1, meta)
 # taxa shared by 50 percent samples of each city
-core.Taxa(data=ITS1, is.OTU=TRUE, meta=meta, rank="g", 
-          meta.factor="City", percent=0.5)
-
-data(ITS1, meta)
-core.Taxa(data=ITS1, is.OTU=TRUE, meta=meta, rank="g", 
-          meta.factor="City", percent=0.7)
+core <- core.Taxa(data=list(ITS1=ITS1), is.OTU=TRUE, meta=meta, 
+                  rank="g", meta.factor="City", percent=0.5)
+\dontrun{
+data(ITS1, ITS2, meta)
+core <- core.Taxa(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
+                  meta=meta, rank="g", meta.factor="City", 
+                  percent=0.7)
 
 # use taxonomy abundance matrix
 g1<-tax.abund(ITS1, rank="g")
-core.Taxa(data=g1, is.OTU=FALSE, meta=meta, rank="g", 
-          meta.factor="City", percent=0.9)
+core <- core.Taxa(data=list(genus_ITS1=g1), is.OTU=FALSE, meta=meta, 
+                  rank="g", meta.factor="City", percent=0.9)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

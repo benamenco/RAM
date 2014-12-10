@@ -6,7 +6,9 @@ Open OTU Table
 }
 \description{
 Opens the given file and returns a data frame representing the 
-OTU table.
+OTU table. This function use \code{\link{read.table}} function so 
+is quite slow for large data sets, for which we recommend to use 
+\code{\link{fread.OTU}} instead.
 }
 \usage{
 read.OTU(file, sep=",")
@@ -59,7 +61,7 @@ that cell needs to be removed before the table can be read with
 }
 \examples{
 \dontrun{
-my.OTU <- read.OTU("path/to/data")}
+my.OTU <- read.OTU("path/to/otu", sep=",")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

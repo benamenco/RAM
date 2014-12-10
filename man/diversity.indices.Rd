@@ -10,16 +10,14 @@ Calculate True Diversity and Evenness
 These functions calculate true diversity and evenness for all samples.
 }
 \usage{
-true.diversity(otu1, otu2 = NULL, index = "simpson")
-evenness(otu1, otu2 = NULL, index = "simpson")
+true.diversity(data, index = "simpson")
+evenness(data, index = "simpson")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{otu1}{
-the otu1 data to be processed.
-}
-  \item{otu2}{
-the otu2 data to be processed.
+  \item{data}{
+a list of otu tables to be processed.
+See \code{\link{RAM.input.formatting}}.
 }
   \item{index}{
 the index to use for calculations; partial match to "\code{simpson}" or
@@ -27,9 +25,6 @@ the index to use for calculations; partial match to "\code{simpson}" or
 }
 }
 \details{
-The \code{otu2} argument is optional; if it is not specified, the
- calculations will be done for only the \code{otu1} argument.
-
 For the following sections, \eqn{S}{S} represents the number of 
 species, \eqn{\lambda}{\lambda} represents the Simpson index, and 
 \eqn{H'}{H'} represents the Shannon index.
@@ -49,7 +44,7 @@ The formulas for the evenness of the indices are as follows:
 }
 }
 \value{
-Both functions return a numeric matrix, where the rows are the given 
+Both functions return a numeric data frame, where the rows are the given 
 OTUs, and the columns are the samples.
 }
 \note{
@@ -81,15 +76,15 @@ Wen Chen and Joshua Simpson.
 data(ITS1, ITS2)
 
 # true diversity, using default index (Simpson)
-true.diversity(ITS1)
+true.diversity(data=list(ITS1=ITS1))
 
 # true diversity for ITS1 and ITS2, using Shannon
-true.diversity(ITS1, ITS2, index="shannon")
+true.diversity(data=list(ITS1=ITS1, ITS2=ITS2), index="shannon")
 
 # default evenness (Simpson) for ITS1/ITS2
-evenness(ITS1, ITS2)
+evenness(data=list(ITS1=ITS1, ITS2=ITS2))
 
 # Shannon evenness
-evenness(ITS1, index="shannon")
+evenness(data=list(ITS1=ITS1), index="shannon")
 }
 \keyword{manip}

@@ -1,9 +1,162 @@
+valid.taxonomy <- function(data) {
+  prefix <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+
+  if ( class(data) != "list" ) {
+    stop("please provide input data as a list, see ?RAM.input.formatting")
+  }
+
+  labels <- names(data)
+  alert.list <- list()
+  for ( i in 1:length(data) ) {
+    otu <- data[[i]]
+    if ( is.null(otu) ) { break }
+    label <- names(data)[i]
+    # check whether missing prefix for each rank
+    valid.OTU(otu)
+    # need to convert all taxonomy to character, NOT factor, 
+    # otherwise, gsub wouldn't work
+    otu$taxonomy <- as.character(otu$taxonomy)
+    alert <- vector()
+    for ( i in 1:nrow(otu) ) {
+       # remove the ; at the end of the lineage
+       if ( grepl(";[ ]+$", otu[i,"taxonomy"], perl=TRUE) ) {         
+           otu[i,"taxonomy"] <- gsub(";[ ]+$", "", otu[i,"taxonomy"], 
+                                   perl=TRUE)
+       } else if ( grepl("[;]+$", otu[i,"taxonomy"], perl=TRUE) ) { 
+          otu[i,"taxonomy"] <- gsub("[;]+$", "", otu[i,"taxonomy"], 
+                                       perl=TRUE)
+       } else {
+           otu[i,"taxonomy"] <- otu[i,"taxonomy"]
+       }
+        # now check # of '; ' and ';'
+      count1 <- sapply(regmatches("; ", gregexpr("; ", 
+                          otu[i,"taxonomy"])), length) 
+      count2 <- sapply(regmatches(";", gregexpr(";", 
+                          otu[i,"taxonomy"])), length)
+      if ( count1 == 0 && count2 ==0 ) {
+         # only kingdom information avaiable 
+         # otuID  k__fungi
+         next
+      } 
+      if (count1 == 0 && count2 > 0 ) {
+         # otu was separated by ';', not '; '
+         alert <- c(alert, "taxonomy lineages are not properly formatted, please check ?RAM.rank.formatting; taxonomic ranks should be separated by '; ', i.e. ';' and a white space")
+      } 
+      if ( count2 >=7 ) {
+         alert <- c(alert, "RAM accept 7 taxonomic ranks, see ?RAM.rank.formatting; the otu table has more than 7 taxonomic ranks") 
+      }
+      miss_pre <- vector()
+      miss_rk <- vector()
+      for ( j in prefix ) {
+         if ( !grepl(j, otu[i,"taxonomy"]) ) {
+              miss_pre <- c(miss_pre, j)
+              miss_rk <- c(miss_rk, .get.rank.name(j))
+           }
+       }
+       if ( length(miss_pre) != 0 ) {
+         alert<- c(alert, paste("missing prefix or missing taxonomy ranks in the lineages; 1) if missing prefix, consider reformatting the taxonomy; 2) if missing ranks only, it's probably ok" ))
+       }
+     }
+     len <- unique(alert)
+     alert <- paste(unique(alert), collapse="\n")
+     if ( len != 0 ) {
+        y <- "Consider reformatting the OTU table's taxonomy, check ?RAM::reformat.taxonomy"
+        warning(paste0(paste("For ", label, ": ", sep=""), alert, "\n", y, sep="; "))
+     }
+ 
+   }
+}
+
+
+.capitalize.vec <- function(vec) {
+  output <- vector()
+  for ( i in vec ) {
+    output <- c(output, .capitalize(i))
+  }
+  return(output)
+}
+
+
+reformat.taxonomy <- function(data, input.ranks=NULL, sep="; ") {
+
+  if ( class(data) != "list" ) { 
+     stop("provide all otu tables as list. See ?RAM.input.formatting")
+  }
+  new.otu <- list()
+  labels <- names(data)
+  # process each otu
+  for (i in 1:length(data) ) {reformat.taxonomy
+      label <- names(data)[i]
+      otu <- data[[i]]
+      if (is.null(otu)) {
+          break
+      }
+      valid.OTU(otu)
+      ls <- list()
+      ls[[label]] <- otu
+      valid.taxonomy(data=ls)
+            
+      # default outputs for RAM taxonomy
+      prefix <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+      names <- c("kingdom", "phylum", "class", "order", "family",
+              "genus", "species")
+      otu$taxonomy <- as.character(otu$taxonomy)
+
+      # reformat 
+      # check whether the 'input.ranks include names
+      input.ranks <- tolower(input.ranks)
+      if ( is.null(input.ranks) || !any(input.ranks %in% names) ) {
+        stop("please provide ALL taxonomic ranks in the input OTU tables, see ?reformat.taxonomy")
+      } 
+
+      # split the current taxonomy column
+      # remove the last ";" at the end of line
+      otu$taxonomy <- gsub("[; ]+$", "", otu$taxonomy, perl=TRUE)
+      suppressWarnings(otu.split <- col.splitup(otu, col="taxonomy", 
+                                         sep=sep, drop=TRUE,
+                                         names=input.ranks))
+
+      # select columns only belong to 
+      n <- which(colnames(otu.split) %in% names)
+      n.names <- intersect(colnames(otu.split), names)
+      n.otu <- ncol(otu)
+      otu.split <- otu.split[, c(1:(n.otu-1), n)]
+            
+      # replace the “unclassified” taxonomy annotation to proper format
+      for (i in n.names) {
+          rank_pat <- .get.rank.pat(i)
+          rank_pat2 <- paste0(rank_pat, rank_pat)
+          otu.split[[i]] <- paste0(substring(i,1,1), "__", 
+                                  otu.split[[i]])
+          otu.split[[i]] <- gsub(rank_pat2, rank_pat, otu.split[[i]])
+      }
+      # combine to “taxonomy column
+      n.split <- ncol(otu.split)
+      for (i in 1:nrow(otu.split) ) {
+          row<-vector();
+          n <- n.otu:n.split
+          for (j in n) {
+              row<-c(row, otu.split[i,j])
+          }
+          otu.split[i, "taxonomy"] <- paste(row, collapse="; ");
+          otu.split[i, "taxonomy"] <- gsub(";[ ]+$", "", 
+                                      otu.split[i,"taxonomy"], 
+                                       perl=TRUE)
+      }  
+      otu.split <- otu.split[, c(1:(n.otu-1), ncol(otu.split))]
+      new.otu[[label]] <- otu.split
+  }      
+  return(new.otu)
+}
+  
+
 get.rank <- function(otu1, otu2=NULL, rank=NULL) {
   single.otu <- is.null(otu2)
   single.rank <- !is.null(rank)
   valid.OTU(otu1, otu2)
   
-  tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+  tax.classes <- c("kingdom", "phylum", "class", "order", "family", 
+                   "genus", "species")
   
   # if given both otu and otu2, call get.rank for both
   if (!single.otu) {
@@ -33,9 +186,9 @@ get.rank <- function(otu1, otu2=NULL, rank=NULL) {
     output <- otu1[grep(pat, otu1$taxonomy), ]
     
     # now only select the ones that are NOT on the blacklist
-    remove.pat <- paste0(.blacklist(rank), "|no_taxonomy")
+    remove.pat <- paste0(.blacklist(rank), "|no_taxonomy", paste0("|", pat,"$"))
     
-    output <- output[!grepl(remove.pat, output$taxonomy, ignore.case = TRUE), ]
+    output <- output[!grepl(remove.pat, output$taxonomy, ignore.case = TRUE, perl=TRUE), ]
     
     if (dim(output)[1] == 0) {
       warning(paste("no OTUs classified at the", .get.rank(.get.rank.ind(rank)),
@@ -79,7 +232,7 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
   } 
   
   # split OTU table taxonomy information into individual columns
-  otu1.split <- suppressWarnings(col.splitup(otu1, col="taxonomy", sep="; ", 
+  suppressWarnings(otu1.split <- col.splitup(otu1, col="taxonomy", sep="; ", 
                    max=length(tax.classes), names=tax.classes, drop=TRUE))
   
   # columns from 1 to max contain the numeric data, the other taxonomic
@@ -121,8 +274,9 @@ tax.split <- function(otu1, otu2=NULL, rank=NULL) {
   }
 }
 
-tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE, 
-          top=NULL, count=TRUE, mode="number") {
+tax.abund <- function(otu1, otu2=NULL, rank=NULL,            
+                      drop.unclassified=FALSE, 
+                      top=NULL, count=TRUE, mode="number") {
   
   single.otu <- is.null(otu2)
   valid.OTU(otu1, otu2)
@@ -235,10 +389,6 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL, drop.unclassified=FALSE,
     stop("argument 'mode' must be one of 'number' or 'percent'.")
   }
   
-  if (!is.numeric(top) || length(top) != 1L) {
-    stop("argument 'top' must be a numeric vector of length one.")
-  }
-  
   if (top <= 0) {
     stop("argument 'top' must be greater than zero.")
   }
@@ -298,8 +448,10 @@ tax.fill <- function(data, downstream=TRUE) {
   
   if (downstream) {
     range <- 1:7
+    belong <- "belongs_to_"
   } else {
     range <- 7:1
+    belong <- "classified_to_"
   }
   
   taxonomy <- strsplit(data$taxonomy, "; ")
@@ -329,7 +481,7 @@ tax.fill <- function(data, downstream=TRUE) {
       # if we need to replace the classification, use last good name
       if (replace[j]) {
     
-          new.name <- paste0(.get.rank.pat(.get.rank(i)), "belongs_to_",
+          new.name <- paste0(.get.rank.pat(.get.rank(i)), belong,
            gsub("__", "_", classified.names[j]))
     
           new.taxonomy[[j]][i] <- new.name
@@ -353,10 +505,11 @@ tax.fill <- function(data, downstream=TRUE) {
 LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
 
   valid.OTU(otu)
-  tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
+  tax.classes <- c("kingdom", "phylum", "class", "order", "family", 
+                   "genus", "species")
 
   # split taxonomy column by ;
-  otu.split <- suppressWarnings(col.splitup(otu, col="taxonomy", sep="; ", 
+  suppressWarnings(otu.split <- col.splitup(otu, col="taxonomy", sep="; ", 
                  max=length(tax.classes), names=tax.classes, drop=TRUE))
   # otu table column#  
   max <- ncol(otu) - 1
@@ -373,8 +526,8 @@ LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
   otu.split[ ,-(1:max)] <- gsub(blacklist, "", 
         as.matrix(otu.split[ ,-(1:max)]))
 
- otu.split[ ,-(1:max)] <- gsub("^[ ]+", "", 
-        as.matrix(otu.split[ ,-(1:max)]), perl=TRUE)
+  otu.split[ ,-(1:max)] <- gsub("^[ ]+", "", 
+       as.matrix(otu.split[ ,-(1:max)]), perl=TRUE)
 
   # obtain LCA of each OTU
   # replace "" to NA
@@ -382,7 +535,8 @@ LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
   
 
   # whether or not strip formatting: e.g. g__
-  otu.split$LCA <- apply(otu.split, 1, function(x) tail(unlist(x [ which(!is.na(x)) ]), n=1))
+  otu.split$LCA <- apply(otu.split, 1, function(x) tail(unlist(x [ 
+                        which(!is.na(x)) ]), n=1))
 
   if ( strip.format ) {
       otu.split$LCA <- otu.split$LCA
@@ -390,11 +544,13 @@ LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
       n.r <- nrow(otu.split)
       n.c <- ncol(otu.split)
       for ( i in 1:n.r ) {
-           num <- which( otu.split[i, 1:(n.c-1)] == otu.split$LCA[i])
+           num <- which(otu.split[i, 1:(n.c-1)]==otu.split$LCA[i])
+           num <- num[length(num)]
            pat <- .get.rank.pat(names(otu.split)[num])
-           otu.split$LCA[i] <- paste(pat, otu.split$LCA[i], sep="")
-        }
-    }
+           otu.split$LCA[i] <- paste(pat, otu.split$LCA[i], 
+                                  sep="")
+      }
+  }
   
   # whether or not remove taxonomy split ranks
   output <- otu.split[, setdiff(colnames(otu.split),"taxonomy")]
@@ -507,4 +663,23 @@ col.splitup <- function(df, col="", sep="", max=NULL, names=NULL, drop=TRUE) {
     return(df.new)
 }
     
+transpose.LCA <- function(data) {
+  .valid.data(data)
+  labels <- names(data)
+
+  lca.t.list <- list()  
+  for ( i in 1:length(data) ) {
+    label <- names(data)[i]
+    otu <- data[[i]]
+    if ( is.null(otu) ) { break }
+    
+    lca <- LCA.OTU(otu, strip.format=FALSE, drop=TRUE)
+    lca <- lca[order(rowSums(lca[,-ncol(lca)]), decreasing=TRUE),]
+    rownames(lca) <- paste(lca$LCA, rownames(lca), sep="_")
+    lca <- lca[, -ncol(lca)]
+    lca.t <- as.data.frame(t(lca))
+    lca.t.list[[label]] <- lca.t
+  }
+  return(lca.t.list)
+}
 

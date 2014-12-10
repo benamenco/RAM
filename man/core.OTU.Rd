@@ -10,20 +10,16 @@ pre-defined percent of samples in each level of a given metadata
 category.
 }
 \usage{
-core.OTU(otu, meta, rank="g", meta.factor="", percent=1)
+core.OTU(data, meta, meta.factor="", percent=1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{otu}{
-the OTU table to be analyzed.
+  \item{data}{
+a list of OTU tables to be analyzed.
+See \code{\link{RAM.input.formatting}}.
 }
   \item{meta}{
 the metadata table to be analyzed.
-}
-  \item{rank}{
-the taxonomic rank(s) of otu classification 
-(see ?RAM.rank.formatting for
-formatting details).
 }
   \item{meta.factor}{
 the metadata qualitative variable 
@@ -65,9 +61,10 @@ method from the function \code{\link{decostand}}.
 }
 \examples{
 data(ITS1, meta)
-
-core.OTU(otu=ITS1, rank="g", meta=meta, meta.factor="City", 
-         percent=0.90)
+\dontrun{
+core.OTU(data=list(ITS1=ITS1), meta=meta, 
+         meta.factor="City", percent=0.90)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

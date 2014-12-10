@@ -17,16 +17,21 @@ their functionality, or increase the ease-of-use.
 \tabular{ll}{
 Package: \tab RAM\cr
 Type: \tab Package\cr
-Version: \tab 1.1.0\cr
-Date: \tab 2014-10-20\cr
+Version: \tab 1.2.0\cr
+Date: \tab 2014-12-10\cr
 License: \tab MIT License, Copyright (c) 2014 Government of Canada\cr
 }
-Load data from .csv-formatted OTU files with \code{read.OTU}, then 
-process the data with other commands. Type the command 
-\code{library(help = RAM)} for a full index of all help topics, or 
-\code{ls("package:RAM")} to get a list of all functions in the package.
+Load data from .csv-formatted OTU files with \code{read.OTU} or 
+\code{fread.OTU}, then process the data with other commands. 
+Type the command \code{library(help = RAM)} for a full index of 
+all help topics, or \code{ls("package:RAM")} to get a list of all 
+functions in the package.
 
-Type \code{data(ITS1, ITS2, meta)} to load a sample (fungal) data set.
+Type \code{data(ITS1, ITS2, meta)} to load sample data sets of RAM,
+which include the following data of 16 samples:  
+1) ITS1: OTU table of fungal internal transcribed spacer region1
+3) ITS2: OTU table of fungal internal transcribed spacer region2
+3) meta: associated 
 
 Type \code{citation("RAM")} for how to cite this package.
 
@@ -50,15 +55,17 @@ Maintainer: Wen Chen <wen.chen@agr.gc.ca>
 \examples{
 \dontrun{
 # load data from your own files...
-ITS1 <- read.OTU("path/to/OTU/table")
-ITS2 <- read.OTU("path/to/OTU/table")
-meta <- read.meta("path/to/meta/table")}
+otu1 <- fread.OTU("path/to/OTU/table")
+otu2 <- read.OTU("path/to/OTU/table")
+meta1 <- fread.meta("path/to/meta/table")
+meta2 <- read.meta("path/to/meta/table")
 
 # ...or use the included sample data 
 data(ITS1, ITS2, meta)
-
+data <- list(ITS1=ITS1, ITS2=ITS2)
 dissim.heatmap(ITS1, meta, row.factor=c(City="City"))
-dissim.alleig.plot(ITS1, ITS2)
+dissim.alleig.plot(data)
 
 # type library(help = RAM) to get a full listing of help documents
+}
 }

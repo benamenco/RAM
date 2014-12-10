@@ -69,17 +69,18 @@ Wen Chen.
 data(ITS1)
     
 # filter.OTU() returns a list
-otu <- filter.OTU(ITS1, percent=0.001)[[1]]
+otu <- filter.OTU(list(ITS1=ITS1), percent=0.001)[[1]]
 # split and keep taxonomy column
-otup.split <- col.splitup(otu, col="taxonomy", sep="; ", 
+otu.split <- col.splitup(otu, col="taxonomy", sep="; ", 
                           drop=FALSE)
-
+\dontrun{
 # give new column names
 tax.classes <- c("kingdom", "phylum", "class", 
                   "order", "family", "genus")
-otup.split <- col.splitup(otu, col="taxonomy", sep="; ", 
+otu.split <- col.splitup(otu, col="taxonomy", sep="; ", 
                            drop=TRUE, names=tax.classes)
-    
+
+}    
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

@@ -1,7 +1,42 @@
+.valid.data <- function(data, is.OTU=TRUE, 
+                        export.sampleIDs=FALSE) {
+  if ( class(data) != "list" ) {
+      stop("please provide ecology data sets as list, see ?RAM.input.formatting for details")
+  } 
+  if ( length(data) != length(names(data)) ) {
+        stop("each datasets in the list should have a given name, see ?RAM.input.formatting for details")
+  }
+  samples <- list()
+  for ( i in 1:length(data) ) {
+    label <- names(data)[i]
+    elem <- data[[i]]
+    if ( is.null(elem) ) { break }
+    if ( is.OTU ) {
+      valid.OTU(elem)
+      samples[[label]] <- names(elem)[-ncol(elem)]
+    } else {
+      samples[[label]] <- rownames(elem)
+      if ( "taxonomy" %in% colnames(elem) ) {
+         stop("are you sure this is NOT an OTU table?")
+      }
+    }
+  }
+  sampleids <- samples[[1]]
+  if ( length(data) != 1 ) {
+    for ( i in 2:length(data) ) {
+      if ( !identical(sampleids, samples[[i]]) ) {
+          stop("samples in each data set don't match, check sample# and order in your data sets before performing any analysis")
+      }
+    }
+  } 
+  if (export.sampleIDs) { return(sampleids) }
+}
+
+
 valid.OTU <- function(otu1, otu2=NULL) {
   
   given.both <- !is.null(otu2)
-  
+
   # tests for otu1
   # ensure object is a data.frame
   if (!is.data.frame(otu1)) {
@@ -232,4 +267,24 @@ valid.OTU <- function(otu1, otu2=NULL) {
     warning(paste("there were", num.otus, "OTU table(s) given, but", 
                   num.labels, "label(s) given. Other labels will be ignored."))
   }
+}
+
+.check.factors <- function(meta, factors) {
+    vec <- vector()
+    for ( i in factors ) {
+        if ( is.null(i) || i=="" ) {
+            next
+        } else if ( !(i %in% names(meta)) ) {
+            vec <- c(vec, i)
+        } else {
+            next
+        }
+    }
+    if ( length(vec) !=0 ) {
+       warning(paste("The following variables are not in the metadata: ", "\n", paste(vec, collapse=", "), sep =""))
+     factors.new <- factors[-which(factors %in% vec)]
+   } else {
+      factors.new <- factors
+   }
+ return(factors.new)  
 }

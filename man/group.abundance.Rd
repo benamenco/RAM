@@ -10,21 +10,19 @@ parameters. It creates a stacked bar plot showing the abundance of all
 classifications at the given taxonomic rank for each sample.
 }
 \usage{
-group.abundance(otu1, otu2=NULL, rank, 
+group.abundance(data, rank, 
                 top=NULL, count=FALSE, drop.unclassified=FALSE,
-                file=NULL, ext=NULL, labels=c("ITS1", "ITS2"),
+                cex.x=NULL, main=NULL, file=NULL, ext=NULL, 
                 height=8, width=16, bw=FALSE, ggplot2=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{otu1}{
-the first OTU table to be used.
-}
-\item{otu2}{
-the second OTU table to be used.
+  \item{data}{
+a list of OTU tables.
 }
   \item{rank}{
-the taxonomic rank to use (see ?RAM.rank.formatting for formatting details).
+the taxonomic rank to use. 
+See \code{\link{RAM.rank.formatting}}.
 }
   \item{top}{
 the number of groups to select, starting with the most abundant. If \code{NULL},
@@ -37,15 +35,18 @@ otherwise the relative abundance will be shown.
   \item{drop.unclassified}{
 logical. Should unclassified samples be excluded from the data?
 }
+  \item{cex.x}{
+optional. The size of x axis names.
+}
+  \item{main}{
+the title of the plot
+}
   \item{file}{
 the file path where the image should be created (see ?RAM.plotting).
 }
   \item{ext}{
 the file type to be used; one of \code{"pdf"}, \code{"png"}, \code{"tiff"}, 
 \code{"bmp"}, \code{"jpg"}, or \code{"svg"}.
-}
-\item{labels}{
-a character vector giving the labels for the panels of the plot.
 }
   \item{height}{
 the height of the image to be created (in inches).
@@ -88,12 +89,16 @@ data(ITS1, ITS2)
 
 # plot the relative abundance at the class level to the screen, ignoring the
 # unclassified
-group.abundance(ITS1, rank="class", drop.unclassified=TRUE)
+group.abundance(data=list(ITS1=ITS1), rank="phylum", 
+                drop.unclassified=TRUE)
 
 \dontrun{
 # plot the count abundance at the phylum level to path.tiff
-group.abundance(ITS1, ITS2, rank="p", file="my/file/path", ext="tiff",
-		count=TRUE)}
+group.abundance(data=list(ITS1=ITS1, ITS2=ITS2), rank="g", 
+                top=10, count=FALSE, drop.unclassified=TRUE,
+                main="", file=NULL, ext=NULL,  
+                height=8, width=16, bw=FALSE, ggplot=TRUE)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

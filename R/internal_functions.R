@@ -205,11 +205,13 @@
     
     rfactor.numcols <- length(levels(row.factor))
     
-    if (rfactor.numcols > 8) {
-      warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels; dropping some levels.")
+    if (rfactor.numcols > 9) {
+      col.func  <-  colorRampPalette(brewer.pal(9, "Pastel1"))
+      rfactor.pal <- col.func(rfactor.numcols)
+      # warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels; dropping some levels.")
+    } else {
+      rfactor.pal <- suppressWarnings(brewer.pal(length(levels(row.factor)), "Pastel1"))
     }
-    
-    rfactor.pal <- suppressWarnings(brewer.pal(length(levels(row.factor)), "Pastel1"))
     # get a vector with the appropriate colour at each index
     rfactor.cols <- rfactor.pal[as.numeric(row.factor)]
     # sort the colours to group based on metadata
@@ -238,12 +240,14 @@
     
     cfactor.numcols <- length(levels(col.factor))
     
-    if (cfactor.numcols > 8) {
-      warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels. Some colours are being recycled in your plot (be careful!).")
+    if (cfactor.numcols > 9) {
+      col.func  <-  colorRampPalette(brewer.pal(9, "Pastel1"))
+      cfactor.pal <- col.func(cfactor.numcols)
+      # warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels. Some colours are being recycled in your plot (be careful!).")
+    } else {
+      # create a palette with a color for each level
+      cfactor.pal <- suppressWarnings(brewer.pal(length(levels(col.factor)), "Accent"))
     }
-    
-    # create a palette with a color for each level
-    cfactor.pal <- suppressWarnings(brewer.pal(length(levels(col.factor)), "Accent"))
     # get a vector with the appropriate colour at each index
     cfactor.cols <- cfactor.pal[as.numeric(col.factor)]
     # sort the colours to group based on the row.factor, if given
@@ -329,16 +333,34 @@
   
   blacklist <- c("unclassified", "unidentified", "incertae_sedis", 
                  "unassignable")
-  
+    
   # example: if we "phylum" as the rank, we want to add "p__;" to the blacklist
   if (!is.null(rank)) {
     .valid.rank(rank)
     
     # convert whatever the rank is to its pattern
     rank <- .get.rank.pat(rank)
-    blacklist <- paste(paste(rank, blacklist, collapse="|", sep=""), 
+    blacklist <- paste(paste(rank, .blacklist(), collapse="|", sep=""), 
                        paste0(rank, ";"), sep="|")
   }
   
   blacklist
 }
+
+.ram.pal <- function(n) {
+  col_pal <- c("red4", "darkslategray3", "dodgerblue1", "darkcyan",
+               "gray79", "black", "skyblue2", "dodgerblue4",
+               "purple4", "maroon", "chocolate1", "bisque3", "bisque",
+               "seagreen4", "lightgreen", "skyblue4", "mediumpurple3",
+               "palevioletred1", "lightsalmon4", "darkgoldenrod1")
+  ram.pal <- col_pal[1:n]
+  return(ram.pal)
+}
+
+
+ 
+.varTostr <- function(var) {
+  deparse(substitute(var))
+}
+
+

@@ -15,37 +15,53 @@ matrices. All of these functions allow you to specify one of many
 dissimilarity indices to be used.
 }
 \usage{
-dissim.clust(data, dist.method="morisita", clust.method="average")
-dissim.eig(data, method="morisita")
-dissim.ord(data, dist.method="morisita", k=NULL)
-dissim.GOF(data, method="morisita")
-dissim.tree(data, dist.method="morisita", clust.method="average")
-dissim.pvar(data, method="morisita")
+dissim.clust(elem, is.OTU=TRUE, stand.method=NULL, 
+             dist.method="morisita", clust.method="average")
+dissim.eig(elem, is.OTU=TRUE, stand.method=NULL, 
+           dist.method="morisita")
+dissim.ord(elem, is.OTU=TRUE, stand.method=NULL,          
+           dist.method="morisita", k=NULL)
+dissim.GOF(elem, is.OTU=TRUE, stand.method=NULL, 
+           dist.method="morisita")
+dissim.tree(elem, is.OTU=TRUE, stand.method=NULL, 
+           dist.method="morisita", clust.method="average")
+dissim.pvar(elem, is.OTU=TRUE, stand.method=NULL, 
+            dist.method="morisita")
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
-  \item{data}{
-the OTU table to be used.
+  \item{elem}{
+an ecology data set that can be an OTU table or a taxonomy 
+abundance table. See \code{\link{RAM.input.formatting}} for details.
 }
-  \item{method}{
-the dissimilarity index to be used; one of "\code{manhattan}",
-"\code{euclidean}", "\code{canberra}", "\code{bray}", "\code{kulczynski}", 
-"\code{jaccard}", "\code{gower}", "\code{altGower}","\code{morisita}", 
-"\code{horn}", "\code{mountford}", "\code{raup}", "\code{binomial}", 
-"\code{chao}", or "\code{cao}".   
+  \item{is.OTU}{
+logical, whether the ecology data sets are OTU tables or taxonomy 
+abundance matrices. See \code{\link{RAM.input.formatting}} for details.
+}
+  \item{stand.method}{
+optional, if \code{is.null}, the standardization method for data
+transforamtion; must be one of the following: "total", "max",
+"frequency", "normalize", "range", "standardize", "pa",
+"chi.square", "hellinger", "log". 
+See also \code{\link{decostand}}.
 }
   \item{dist.method}{
-same as \code{method}, but named differently for functions with other 
-\code{method} parameters.
+the dissimilarity index to be used; one of "\code{manhattan}",
+"\code{euclidean}", "\code{canberra}", "\code{bray}", 
+"\code{kulczynski}", "\code{jaccard}", "\code{gower}", 
+"\code{altGower}","\code{morisita}", "\code{horn}", 
+"\code{mountford}", "\code{raup}", "\code{binomial}", 
+"\code{chao}", or "\code{cao}".  
+See also \code{\link{vegdist}}.
 }
   \item{k}{
-the number of dimensions desired. If \code{NULL}, the maximum value will be 
-calculated and used.
+the number of dimensions desired. If \code{NULL}, the maximum value 
+will be calculated and used.
 }
   \item{clust.method}{
 the method used for clustering the data. Must be one of "\code{ward}",
-"\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", 
-"\code{median}", or "\code{centroid}".   
+"\code{single}", "\code{complete}", "\code{average}", "\code{mcquitty}", "\code{median}", or "\code{centroid}".  
+See also \code{\link{hclust}}. 
 }
 }
 %\details{
@@ -80,7 +96,8 @@ Wen Chen and Joshua Simpson
 %}
 
 \seealso{
-\code{\link{vegdist}}, \code{\link{hclust}}, \code{\link{dissim.plot}}
+\code{\link{decostand}}, \code{\link{vegdist}}, 
+\code{\link{hclust}}, \code{\link{dissim.plot}}
 }
 \examples{
 data(ITS1)

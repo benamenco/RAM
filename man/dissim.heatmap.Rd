@@ -10,8 +10,9 @@ parameters, and creates a heatmap showing the distance matrix
 for the samples of the given OTU table.
 }
 \usage{
-dissim.heatmap(data, meta=NULL, row.factor=NULL, col.factor=NULL, 
-               stand.method="chi.square", dissim.method="euclidean",
+dissim.heatmap(data, is.OTU=TRUE, meta=NULL, row.factor=NULL, 
+               col.factor=NULL, stand.method="chi.square", 
+               dissim.method="euclidean",
                file=NULL, ext=NULL, height=8, width=9, 
                leg.x=-0.05, leg.y=0)
 }
@@ -19,6 +20,9 @@ dissim.heatmap(data, meta=NULL, row.factor=NULL, col.factor=NULL,
 \arguments{
   \item{data}{
 the OTU table to be used.
+}
+  \item{is.OTU}{
+logical. Whether or not the data is an OTU table.
 }
   \item{meta}{
 the metadata table to be used.  
@@ -111,13 +115,13 @@ data(ITS1, meta)
 
 # plot to the screen with one meta factor and standard 
 # calculation methods 
-dissim.heatmap(ITS1, meta, row.factor=c(Plot="Plots"))
+dissim.heatmap(ITS1, is.OTU=TRUE, meta=meta, row.factor=c(Plot="Plots"))
 
 \dontrun{
 # plot the heatmap to a .tiff file using Hellinger standardization 
 # and Manhattan distances
-dissim.heatmap(ITS1, dissim.method=manhattan, 
-               stand.method=hellinger,
+dissim.heatmap(ITS1, dissim.method="manhattan", 
+               stand.method="hellinger",
                file="my/sample/path", ext="tiff")}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

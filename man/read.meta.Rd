@@ -5,7 +5,8 @@
 Open Metadata Table
 }
 \description{
-Opens the given file and return a data frame representing the metadata.
+Opens the given file and return a data frame representing the metadata. This function use \code{\link{read.table}} to read in 
+data; for large data sets, we recommend \code{\link{read.meta}}.
 }
 \usage{
 read.meta(file, sep=",")
@@ -36,11 +37,12 @@ Wen Chen and Joshua Simpson
 %% ~Make other sections like Warning with \section{Warning }{....} ~
 
 \seealso{
-\code{\link{getwd}}, \code{\link{setwd}}, \code{\link{read.table}}
+\code{\link{read.meta}}, \code{\link{read.table}}
 }
 \examples{
-\dontrun{
-my.meta <- read.meta("path/to/meta")}
+  \dontrun{
+    my.meta <- read.meta("path/to/meta")
+  }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

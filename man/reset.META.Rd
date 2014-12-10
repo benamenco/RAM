@@ -53,13 +53,14 @@ Wen Chen
 % ~~further links~~
 %}
 \examples{
-    data(meta)
-    str(meta)
-
-    # for demonstration purpose only
-    meta.new <- reset.META(meta, factor=c("Plots"), 
-                           numeric=c("City", "Province"))
-    str(meta.new)
+data(meta)
+str(meta)
+\dontrun{
+# for demonstration purpose only
+meta.new <- reset.META(meta, factor=c("Plots"), 
+                   numeric=c("City", "Province"))
+str(meta.new)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

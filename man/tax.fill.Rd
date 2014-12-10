@@ -80,12 +80,12 @@ Wen Chen and Joshua Simpson.
 \code{\link{RAM.rank.formatting}}
 }
 \examples{
-    data(ITS1)
+data(ITS1)
 
-    #\code{filter.OTU} returns a list
-    otu <- filter.OTU(ITS1, percent=0.001)[[1]]
+#\code{filter.OTU} returns a list
+otu <- filter.OTU(data=list(ITS1=ITS1), percent=0.001)[[1]]
 
-    tax.fill(otu)
+tax.fill(otu)
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.

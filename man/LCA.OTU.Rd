@@ -41,13 +41,12 @@ The taxonomy column can be kept, by using \code{drop}.
 Wen Chen   
 }
 \note{
-This function may seem similar to \code{tax.split}, but they are 
-distinct.\code{tax.split} returns the same OTU table with 
-classification at a given taxonomic rank, which can be missing if 
-an otu was not classified a that that taxonomic level. 
-\code{\link{LCA.OTU}}, guaranteed that all OTUs will be preserved 
-in the returned data table and provide the LCA for each OTU, 
-although only higher taxonomic ranks were available.  
+\code{tax.split} returns the same OTU table with classification 
+at a given taxonomic rank, which can be missing if an otu was not 
+classified a that that taxonomic level. \code{\link{LCA.OTU}}, 
+guaranteed that all OTUs will be preserved in the returned data 
+table and provide the LCA for each OTU, although only higher 
+taxonomic ranks were available.  
 }
 
 %% ~Make other sections like Warning with \section{Warning }
@@ -57,11 +56,14 @@ although only higher taxonomic ranks were available.
 \code{\link{tax.split}}
 }
 \examples{
-    data(ITS1)
-    
-    # compare the following 2 commands:
-    ITS1.LCA <- LCA.OTU(ITS1, strip.format=TRUE, drop=TRUE)  
-    ITS1.LCA <- LCA.OTU(ITS1, strip.format=FALSE, drop=TRUE)
+data(ITS1)
+\dontrun{    
+# compare the following 2 commands:
+# keep the rank prefix of the LCA column
+ITS1.LCA <- LCA.OTU(ITS1, strip.format=TRUE, drop=TRUE)  
+# remove the rank prefix of the LCA column
+ITS1.LCA <- LCA.OTU(ITS1, strip.format=FALSE, drop=TRUE)
+}
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the
 % R documentation directory.
