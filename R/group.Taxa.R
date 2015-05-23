@@ -508,20 +508,23 @@ group.abund.Taxa <- function(data, is.OTU=TRUE, rank="g", taxa,
     if ( is.OTU ) {
       valid.OTU(elem)
        # get the groups
-      tax<-.group.rank(data=elem, meta=meta, 
+      tax<-.group.rank2(data=elem, meta=meta, 
                         meta.factor=meta.factor,
                        relative.abund=TRUE, taxa=taxa,  
                        drop.unclassified=drop.unclassified, 
                        rank=rank)  
     } else {
-      tax <- elem
+      elem.p <- decostand(elem, "total")
+      tax <- elem.p[, names(elem.p) %in% taxa]
     }
      
     # melt by Sample
     #if (!require("reshape2")) {
    #   stop("package 'reshape2' is required to use this function")
    # }
-  
+    if (ncol(tax) ==0 ) { 
+      stop("selected taxa was not found")
+    }
     tax.m <- melt(cbind(tax, Sample=rownames(tax)), 
                        id.vars="Sample", value.name="RA", 
                        variable.name=rank_name)
@@ -716,7 +719,7 @@ shared.Taxa <- function(data, is.OTU=TRUE, rank="g") {
 }
         
 
-.group.rank<-function(data, is.OTU=TRUE, meta=meta, meta.factor="",
+.group.rank2<-function(data, is.OTU=TRUE, meta=meta, meta.factor="",
                       drop.unclassified=FALSE, relative.abund=FALSE, 
                       rank="g", taxa=NULL){
   ## whether data an OTU or taxonomic abundance matrix

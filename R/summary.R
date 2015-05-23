@@ -475,8 +475,9 @@ group.spec  <-  function(otu, meta, factor, file=NULL, ext=NULL,
   save  <-  !is.null(file)
   
   .valid.meta(otu1=otu, meta=meta)
-  m <- as.data.frame(cbind(rownames(meta), meta[[factor]]))
-  rownames(m)<-m[,1]
+  m <- meta
+  m$rn <- rownames(m)
+  m <- m[, c("rn", factor)]
   names(m) <-c("rownames", factor)
   m <- m[complete.cases(m),]
   not <- setdiff(rownames(meta), rownames(m))
@@ -504,15 +505,15 @@ group.spec  <-  function(otu, meta, factor, file=NULL, ext=NULL,
   
   # calculate specnumber, specpool & specpool2vect
   # specpool for pooled samples (e.g. metadata categories): 
-  # Function ‘specpool’ uses presence data. The incidence-based, 
-  # i.e. presence/absence, estimates in ‘specpool’ use the 
+  # Function 'specpool' uses presence data. The incidence-based, 
+  # i.e. presence/absence, estimates in 'specpool' use the 
   # frequencies of species in a collection of sites.
 
   pool  <-  specpool(transpose.OTU(otu), meta[[factor]])
   pool.vect <- specpool2vect(pool)
 
-  # specpool2vect: specpool2vect’ maps the pooled values into a 
-  # vector giving the value of selected ‘index’ for each original 
+  # specpool2vect: 'specpool2vect' maps the pooled values into a 
+  # vector giving the value of selected 'index' for each original 
   # site. specpool2vect(pool, index = c("jack1","jack2", "chao", 
   # "boot","Species")) 
   
@@ -524,7 +525,7 @@ group.spec  <-  function(otu, meta, factor, file=NULL, ext=NULL,
  
   for ( i in index ) {
       rn <- paste("Percent_OTU_observed", i, sep=":")
-      df[rn,] <- OTU_observed/specpool2vect(pool, index=i)
+      df[rn,] <- 100*OTU_observed/specpool2vect(pool, index=i)
   }
   
   df["OTU_observed",]  <-  specnumber(transpose.OTU(otu))
@@ -573,8 +574,9 @@ group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
   V1 = se = NULL
   .valid.meta(otu1=otu, meta=meta)
   .valid.factor(meta, factor)
-  m <- as.data.frame(cbind(rownames(meta), meta[[factor]]))
-  rownames(m)<-m[,1]
+  m <- meta
+  m$rn <- rownames(m)
+  m <- m[, c("rn", factor)]
   names(m) <-c("rownames", factor)
   m <- m[complete.cases(m),]
   not <- setdiff(rownames(meta), rownames(m))

@@ -1,11 +1,49 @@
-$Date: 2014-12-10 12:06:44 +0200 (Wednesday, 10 Dec 2014) $
+$Date: 2015-05-15 12:06:44 +0200 (Friday, 15 May 2015) $
 
 RAM RELEASE VERSIONS at http://cran.r-project.org/
+
+Version 1.2.1 (released May 15, 2015)
+   
+    * group.rich: fixed the labels on x axis of plot
+   
+    * group.spec: fixed the labels on x axis of plot
+
+    * filter.OTU: fixed a bug in row selection
+
+    * tax.abund: substitues spaces in names of the output dataframes
+      with "_"  
+   
+    * phylo_taxonomy: new function to plot hierarchical 
+      taxonomic tree with relative abundance of all taxa at a 
+      given rank if category variables are provided. Nonsplitting 
+      nodes are collapsed as ape::plot.phylo does..
+ 
+    * phylog_taxonomy: new function to plot hierarchical 
+      taxonomic tree, the leaves are taxa at a given rank, 
+      nonsplitting nodes are not collapsed as ade4::plot.phylog does.
+
+    * factor.abundance: new function to create a stacked bar plot 
+       showing the abundance of all classifications at the given 
+       taxonomic rank for each level of a metadata category variable.
+
+    * seq_var: new function to calculate and plot inter/intra 
+       specific variation for an alignment.
+
+    * network_data: new function to generate a list of network nodes 
+      and edges based on an otu table and associated metadata
+
+    * group.abundance.meta: an updated version of 
+      \code{\link{group.abundance}}, which groups samples by 
+      metadata category variables if provided
+
+    * alignment: new data for \code{\link{seq_var}
 
 Version 1.2.0 (released December 10, 2014)
 
     * fread.OTU: use data.table::fread for reading in large data 
-      set.
+      set. 
+
+    * filter.OTU: Fixed a bug in selecting rownames.
    
     * fread.meta: use data.table::fread for reading in large data 
       set.

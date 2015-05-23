@@ -67,7 +67,7 @@ group.heatmap.simple <- function(data, is.OTU=TRUE, meta=NULL, rank="g", row.fac
   }
   
   # generate a palette with a large gradient
-  cols <- brewer.pal(3, "YlOrRd") 
+  cols <- RColorBrewer::brewer.pal(3, "YlOrRd") 
   gradient <- colorRampPalette(cols)(100)
   
   longest.row.label <- max(sapply(rownames(data.tax), FUN=nchar))
@@ -190,7 +190,7 @@ dissim.heatmap <- function(data, is.OTU=TRUE, meta=NULL, row.factor=NULL, col.fa
   }
   
   # get colour palette
-  mat.cols <- brewer.pal(11, "PiYG")
+  mat.cols <- RColorBrewer::brewer.pal(11, "PiYG")
   
   # "basic" plot parameters; they mostly determine the non-meta data as well 
   # as the properties of the plotting environment
@@ -241,11 +241,16 @@ group.heatmap <- function(data, is.OTU=TRUE, meta, rank, factors,
   # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
   # but I think returning an explanatory error message is worthwhile
   
-  if ( require("Heatplus") ) {
-    Heatplus::annHeatmap2
-    Heatplus::niceBreaks
-  } else {
+ #if ( require("Heatplus") ) {
+ #  Heatplus::annHeatmap2
+ #  Heatplus::niceBreaks
+  if(!requireNamespace('Heatplus')) {
+#   } else {
     stop("package 'Heatplus' is required to use this function: follow the instructions at http://www.bioconductor.org/packages/release/bioc/html/Heatplus.html to install it.")
+  }
+
+  if(!requireNamespace('RColorBrewer')) {
+    stop("package 'RColorBrewer' is required to use this function")
   }
 
   save <- !is.null(file)
@@ -301,7 +306,7 @@ group.heatmap <- function(data, is.OTU=TRUE, meta, rank, factors,
   col.clus <- hclust(vegdist(t(stand), method=dist.method), hclust.method)
   
   # generate a palette with a large gradient
-  base.cols <- brewer.pal(3, "YlOrRd")
+  base.cols <- RColorBrewer::brewer.pal(3, "YlOrRd")
   # this next part is a hack: the niceBreaks call is taken from the annHeatmap2
   # source; we use that call to calculate the minimum number of colours needed
   # which means that the majority of the palette is used (looks nice, distinguishes best)
@@ -310,7 +315,7 @@ group.heatmap <- function(data, is.OTU=TRUE, meta, rank, factors,
   cols <- colorRampPalette(base.cols)(cols.needed)
   
   #pastels <- function(n) {brewer.pal(n, "Pastel1")}
-  col.pal <- c(brewer.pal(9, "Pastel1"), brewer.pal(8, "Accent"), .ram.pal(20))
+  col.pal <- c(RColorBrewer::brewer.pal(9, "Pastel1"), RColorBrewer::brewer.pal(8, "Accent"), .ram.pal(20))
   pastels <- function(n){col.pal[1:n]}
   
   meta.factors <- .valid.factors(meta, factors)

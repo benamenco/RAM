@@ -349,23 +349,17 @@ envis.NB <- function(NB.model="", tax.meta,  taxon="",
       mode <- "mix"
   }
 
-  if ( len.num != 0 ) {
-      if ( num.col == "" || is.null(num.col) ) {
-stop("Must choose one numeric variable as one predictor, it should 
-be set as num.col, can also be as x axis")
-      } else {
-          if ( is.numeric(tax.meta[, x]) && !identical(x, num.col)) {
+  #if ( len.num != 0 ) {
+  #    if ( num.col == "" || is.null(num.col) ) { stop("Must choose one numeric variable as one predictor, it should be set as num.col, can also be as x axis")
+  #    } else {
+  if ( is.numeric(tax.meta[, x]) && !identical(x, num.col)) {
 warning(paste("num.col=", num.col, " has been set as the predictor, 
 will be used as x axis for plotting; ", "will ignore x=", x, sep=""))
-              x <- num.col
-          } else {
-              x <- x
-          }
-       }
+    x <- num.col
   } else {
-      x <- x
+    x <- x
   }
-              
+     
   # create the new data for NB plotting
   suppressWarnings(newdf_NB <- .newdf.NB(tax.meta, num.col=num.col, length.out=100))
   
@@ -435,7 +429,8 @@ will be used as x axis for plotting; ", "will ignore x=", x, sep=""))
       p <- ggplot(df2, aes_string(x=x, y=taxon, fill=fill)) +
            geom_line(aes_string(colour = fill), size = 2) +
            geom_ribbon(aes_string(ymin = "LL", ymax = "UL", 
-                                   fill = fill), alpha = .25) +
+                                   #fill = fill), alpha = .25) +
+                                   fill = fill), alpha = 0.25) +
            labs(x = xlab, y = paste("Predicted ", taxon, sep="")) 
     }     
 

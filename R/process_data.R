@@ -16,6 +16,7 @@ filter.OTU <- function(data, percent=NULL, number=NULL) {
   labels <- names(data)  
 
   otu_sel <- list()
+  otu.sel <- list()
   for ( i in 1:length(data) ){
     otu <- data[[i]]
     if (is.null(otu)) { break }
@@ -33,27 +34,24 @@ filter.OTU <- function(data, percent=NULL, number=NULL) {
         otu.p <- cbind(decostand(otu[, -ncol(otu)], 
                        MARGIN=2, "total"), otu$taxonomy)
         names(otu.p)[ncol(otu.p)]<-"taxonomy"
-        sel <- which(apply(otu.p[, -ncol(otu.p)], 
-                     MARGIN=1, FUN=max) > percent)
+        sel <- rownames(otu.p)[which(apply(otu.p[, -ncol(otu.p)], 
+                     MARGIN=1, FUN=max) > percent)]
     } else if (!is.null(number)) {
         # select OTUs more than number sequences in total
-        sel<-which(rowSums(otu[, -ncol(otu)]) > number)
+        sel<-rownames(otu.p)[which(rowSums(otu[, -ncol(otu)]) > number)]
     } else {
         warning("no filtering requirment provided, will return the original otus")
     } 
     otu_sel[[label]] <- sel
-  } 
-    
-  otu.sel = list()
-  for ( i in 1:length(otu_sel) ) {
-    label <- names(otu_sel)[i]
-    if ( length(otu_sel[[label]]) == 0 ) {
+    #return(otu_sel)  
+
+    if ( length(sel) == 0 ) {
       warning("no otus in ", label, " met the filter requirement, original OTU returned")
-      otu.sel[[label]] <- ""
+      sel <- ""
     } else {
-      print(paste(length(otu_sel[[label]]), " otus in ", label,
+      print(paste(length(sel), " otus in ", label,
                   " met the filter requirment.", sep=""))
-        otu.sel[[label]] <- otu[otu_sel[[label]], ]
+        otu.sel[[label]] <- otu[sel, ]
     }
   }
   return(otu.sel)

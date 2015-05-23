@@ -323,7 +323,9 @@
     ggsave.args <- c(ggsave.args, compression="lzw")
   }
   
-  
+ # it does not work because ggsave wants an object of class ggplot, while you're passing a grob. arrangeGrob will sometimes trick ggsave in pretending inheritance from ggplot, but only when at least one of the grobs belongs to this class; here, however, you're only passing a gtable. Perhaps the easiest workaround is to clone ggsave and bypass the class check,
+
+  ggsave <- ggplot2::ggsave; body(ggsave) <- body(ggplot2::ggsave)[-2]
   do.call(ggsave, ggsave.args)
 }
 
@@ -332,7 +334,7 @@
 .blacklist <- function(rank = NULL) {
   
   blacklist <- c("unclassified", "unidentified", "incertae_sedis", 
-                 "unassignable")
+                 "incertae sedis", "unassignable")
     
   # example: if we "phylum" as the rank, we want to add "p__;" to the blacklist
   if (!is.null(rank)) {
@@ -361,6 +363,46 @@
  
 .varTostr <- function(var) {
   deparse(substitute(var))
+}
+
+.group.rank<-function(otu, meta=meta, meta.factor="", drop.unclassified=FALSE, relative.abund=FALSE, rank="g", top=10){
+  tax <- tax.abund(otu, rank=rank, drop.unclassified=FALSE, count=TRUE)
+  #return(tax)
+  if(all(rownames(tax)==rownames(meta))) {
+    tax.factor<-aggregate(tax, by=list(meta[[meta.factor]]), FUN=sum)
+    rownames(tax.factor)<-tax.factor[,"Group.1"]
+    tax.factor<-tax.factor[,-1]
+  } else {
+    stop("Error: otu and metadata have different samples")
+  }
+  #return(tax.factor)
+  tax.factor<-tax.factor[, order(colSums(tax.factor), decreasing=TRUE)]
+  if(!isTRUE(relative.abund)) {
+    tax.factor<-tax.factor
+  } else {
+    tax.factor<-decostand(tax.factor, "total")
+    
+  }
+
+  if (drop.unclassified) {
+      # this selects all columns NOT containing in the blacklist
+      # drop.unclassified using blacklist
+     remove.pat <- gsub(.get.rank.pat(rank), "", paste0(.blacklist(.get.rank.pat(rank)), "|no_taxonomy"))
+          tax.factor <- tax.factor[ , !grepl(remove.pat, names(tax.factor), ignore.case=TRUE), drop=FALSE]
+    } else {
+    tax.factor<-tax.factor
+  }
+  # keep only the 'top' most abundant groups, where top is user-given 
+
+  if ( top > ncol(tax.factor) ) {
+    warning(paste("There are ", ncol(tax.factor), " taxa at ", .get.rank.name(rank), " will return all!", sep=""))
+    top <- ncol(tax.factor)
+  } else {
+    top <- top
+  }
+  tax.factor<-tax.factor[,1:top]
+
+    return(tax.factor)    
 }
 
 

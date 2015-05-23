@@ -14,6 +14,7 @@ The plot will also show the sample size of each location.
 }
 \usage{
 sample.map(meta, siteID="City", maptype="roadmap",  
+           shape=16, colour=c("red", "blue"),
            lat="Latitude", lon="Longitude", zoom=3, 
            file=NULL, ext=NULL, width=10, height=10)
 }
@@ -28,6 +29,12 @@ latitude.
 }
   \item{maptype}{
 maptype to use, see also \code{\link{get_map}}.
+}
+  \item{shape}{
+shape to be used, default is 16 (solid round dot).
+}
+  \item{colour}{
+smooth gradient between two colours, default is c("red", "blue")
 }
   \item{lat}{
 latitude of each sampling location

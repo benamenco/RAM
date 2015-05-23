@@ -114,7 +114,7 @@
       #top.otus[["Rank"]] <- rank
           
       # add to our list after melting
-      rank.list[[rank]]  <-  melt(top.otus, id.vars=c("Region", "Rank"), 
+      rank.list[[rank]]  <-  reshape2::melt(top.otus, id.vars=c("Region", "Rank"), 
                             value.name="RA", variable.name="OTU") 
   
     }
@@ -278,7 +278,7 @@ group.abundance  <-  function(data, rank,
   .valid.plot.settings(file, ext)
   if (save) { .get.dev(file, ext, height=height, width=width) }
 
-  .valid.data(data) 
+  
   labels <- names(data)
   num.otus <- length(data)
   
@@ -465,7 +465,7 @@ group.abundance  <-  function(data, rank,
     elem.tax  <-  tax.abund(elem, rank=rank, drop.unclassified=drop.unclassified,
                           count=count, top=top)
     # melt by Sample
-    elem.tax  <-  melt(cbind(elem.tax, Sample=rownames(elem.tax)), id.vars="Sample",
+    elem.tax  <-  reshape2::melt(cbind(elem.tax, Sample=rownames(elem.tax)), id.vars="Sample",
                      value.name="RA", variable.name="Taxon")
     # bind together with appropriate label
     elem.tax  <-  cbind(elem.tax, Region=label)
@@ -550,6 +550,104 @@ group.abundance  <-  function(data, rank,
   p
 }
 
+
+factor.abundance <- function(data, rank, top=NULL, count=FALSE, 
+                             meta=meta, meta.factor="", drop.unclassified=FALSE, 
+                             file=NULL, ext=NULL, height=8, width=16, main="") {
+  # validate inputs
+ # valid.OTU(otu1, otu2)
+ # .valid.plot.settings(file, ext)
+
+  .valid.rank(rank)
+  .valid.data(data)
+  
+  save  <-  !is.null(file)
+  .valid.plot.settings(file, ext)
+  if (save) { .get.dev(file, ext, height=height, width=width) }
+
+  labels <- names(data)
+  num.otus <- length(data)
+  
+  taxa <- list()
+  for (i in 1:length(data)) {
+    elem <- data[[i]]
+    label <- names(data)[i]
+    if (is.null(elem)) {
+      break
+    }
+    valid.OTU(elem)
+    #return(elem)
+    # get the groups
+    if (length(meta.factor) > 1L || length(meta.factor)==0L || meta.factor == "" ) {
+      stop("Please provide ONE category variable in the metadata")
+    } else {
+      elem.tax<-.group.rank(otu=elem, meta=meta, meta.factor=meta.factor, relative.abund=TRUE, top=top, drop.unclassified=drop.unclassified, rank=rank)
+    }
+  #return(elem.tax)
+    # melt by Sample
+  if (!requireNamespace("reshape2")) {
+    stop("package 'reshape2' is required to use this function")
+  }
+  
+    elem.tax.m <- reshape2::melt(cbind(elem.tax, Sample=rownames(elem.tax)), id.vars="Sample", value.name="RA", variable.name="Taxon")
+    # bind together with appropriate label
+    elem.tax.m <- cbind(elem.tax.m, Region=label)
+    
+    taxa[[label]] <- elem.tax.m
+  }
+  
+  all.taxa  <-  do.call("rbind", taxa)
+  
+  # reorder levels based on order of appearance in table
+  all.taxa$Sample <- ordered(all.taxa$Sample, levels=unique(all.taxa$Sample))
+  
+    title <- main
+  
+  # we need to use aes_string to pass CRAN check; see 
+  # http://goo.gl/JxgZ9u
+  p <- ggplot(all.taxa, aes_string(x="Sample", y="RA", fill="Taxon")) + 
+    geom_bar(position="stack", stat="identity") +
+    #coord_flip() +
+    xlab(meta.factor) +
+    ggtitle(title) +
+    theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          panel.grid.major.x = element_blank())
+    if (!requireNamespace("scales") ||   !requireNamespace("RColorBrewer")) {
+       stop("packages scales and RColorBrewer are required for this function")
+    }
+    p <- p +  scale_y_continuous(labels = percent_format()) +
+      ylab("Relative Abundance")
+  
+  #if (!single.otu) { # for multiple OTUs, wrap based on region
+  #  p <- p + facet_wrap(~Region, scales="free_x")
+  #}
+  
+   # use actual colours
+    
+    cols.needed <- length(unique(all.taxa$Taxon))
+    
+    if (cols.needed > 12) {
+      # palette max is 12; so if we have more than 6 entries for otu1/2, we 
+      # need to manually construct a palette to use
+      
+      col.func <- colorRampPalette(brewer.pal(12, "Set3"))
+      p <- p + scale_fill_manual(values=col.func(cols.needed), 
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+    } else {
+      # otherwise, we can just use the Set3 palette from RColorBrewer
+      p <- p + scale_fill_brewer(palette="Set3",
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+    }
+    p <- p + facet_wrap(~Region, scales="free_x")
+    
+  print(p)
+  if (save) { dev.off() }
+  
+        invisible()
+  
+}
+
+
 group.temporal <- function(data, meta, date.col, factors, rank, group, 
                             file=NULL, ext=NULL, height=8, width=12) {
   
@@ -590,7 +688,7 @@ group.temporal <- function(data, meta, date.col, factors, rank, group,
   
   meta.factors <- aggregate(meta.factors, by=list(dates), FUN=mean)
   meta.factors <- rename(meta.factors, c("Group.1"="Date"))
-  meta.factors <- melt(meta.factors, id.vars="Date", variable.name="Measure",
+  meta.factors <- reshape2::melt(meta.factors, id.vars="Date", variable.name="Measure",
                        value.name="Value")
   names(meta.factors)[ncol(meta.factors)] <- "Value"
   names(meta.factors)[ncol(meta.factors)-1] <- "Measure"
@@ -616,7 +714,7 @@ group.temporal <- function(data, meta, date.col, factors, rank, group,
   abund.agg <- aggregate(abund, by=list(dates[ordering]), FUN=sum)
   abund.agg <- rename(abund.agg, c("Group.1"="Date"))
   
-  abund.agg <- melt(abund.agg, id.vars="Date", variable.name="Group", 
+  abund.agg <- reshape2::melt(abund.agg, id.vars="Date", variable.name="Group", 
                      value.name="Count")
   names(abund.agg)[ncol(abund.agg)] <- "Count"
   names(abund.agg)[ncol(abund.agg)-1] <- "Group"
@@ -717,7 +815,7 @@ group.spatial <- function(data, meta, date.col, province.col, rank, group,
   }
   
   abund.loc <- rbind(abund.loc, do.call(rbind, missing))
-  abund.loc.melt <- melt(abund.loc, id.vars=c("id", "Date"), variable.name="Group",
+  abund.loc.melt <- reshape2::melt(abund.loc, id.vars=c("id", "Date"), variable.name="Group",
                          value.name="Count")
   names(abund.loc.melt)[ncol(abund.loc.melt)] <- "Count"
   names(abund.loc.melt)[ncol(abund.loc.melt)-1] <- "Group"
@@ -777,9 +875,9 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
   # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
   # but I think returning an explanatory error message is worthwhile
   
-  if ( require("indicspecies") ) {
-    indicspecies::multipatt
-  } else {
+  if ( !requireNamespace("indicspecies") ) {
+  #  indicspecies::multipatt
+ # } else {
     stop("package 'indicspecies' is required to use this function: try 'install.packages('indicspecies')'.")
   }
   
@@ -902,7 +1000,7 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
                                  abund.stand[ , keep, drop=FALSE])
     
     # melt it & store the result
-    rows[[label]]  <-  melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
+    rows[[label]]  <-  reshape2::melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
                                                     variable.name="Indicator",
                                                     value.name="Value")
     
@@ -1031,7 +1129,7 @@ sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
     index <- index + 1
   }
   
-  meta.data <- melt(meta.data, id.vars=c(lat.col, long.col, names(factor)), 
+  meta.data <- reshape2::melt(meta.data, id.vars=c(lat.col, long.col, names(factor)), 
                     variable.name="Region", value.name="Counts")
   names(meta.data)[ncol(meta.data)] <- "Counts"
   names(meta.data)[ncol(meta.data)-1] <- "Region"
@@ -1057,7 +1155,8 @@ sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
   
   map <- do.call(get_map, get_map.args)
   
-  p <- ggmap(map, extent="device") +
+  #p <- ggmap(map, extent="device") +
+  p <- ggmap(map) +
        geom_point(points.aes, data=meta.data.agg, alpha=0.7) +
        scale_color_brewer(palette = "Set1") +
        scale_size(range=c(2,10))
@@ -1068,3 +1167,191 @@ sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
     p 
   }
 }
+
+group.abundance.meta  <-  function(data, rank, top=NULL, count=FALSE, 
+                            drop.unclassified=FALSE, cex.x=NULL, main=NULL, 
+                            file=NULL, ext=NULL, height=8, width=16, bw=FALSE, 
+                            meta=NULL, meta.factor=NULL) {
+  
+  .valid.rank(rank)
+  .valid.data(data)
+  
+  save  <-  !is.null(file)
+  .valid.plot.settings(file, ext)
+  if (save) { .get.dev(file, ext, height=height, width=width) }
+
+  
+  labels <- names(data)
+  num.otus <- length(data)
+  
+  .abundance.ggplot2.meta(data, rank, top, count, drop.unclassified, cex.x, main, file, ext,
+                       height, width, bw, meta=meta, meta.factor=meta.factor)
+}
+
+
+
+.abundance.ggplot2.meta  <-  function(data, rank, 
+                               top=NULL, count=FALSE, drop.unclassified=FALSE,
+                               cex.x=NULL, main=NULL, file=NULL, ext=NULL,  
+                               height=8, width=16, bw=FALSE, meta=NULL, meta.factor=NULL) {
+  # validate inputs
+  save  <-  !is.null(file)
+  if (save) {
+    .valid.plot.settings(file, ext)
+  }  
+
+  .valid.rank(rank)
+
+  if ( class(data) != "list" ) {
+    stop("please provide data as list, see ?RAM.input.formatting")
+  }
+
+  labels <- names(data)
+  num.otus <- length(data)
+
+  taxa  <-  list()
+  for (i in 1:length(data) ) {
+    elem <- data[[i]]
+    if (is.null(elem)) { break }
+    label <- names(data)[i]
+    valid.OTU(elem)
+
+    if ( !is.null(meta) ) {
+       .valid.meta(otu1=elem, meta=meta)
+    }
+    
+    if ( is.null(meta) && !is.null(meta.factor) ) {
+      stop("Metadata was not provided")
+    } else if ( !is.null(meta) && is.null(meta.factor)) {
+      meta <- meta
+    } else if ( !is.null(meta) && ! is.null(meta.factor)) {
+      fac.len <- length(meta.factor)
+      vec.fac <- vector()
+      for ( i in 1:fac.len) {
+        if ( ! any(meta.factor[i] %in% names(meta)) ) {
+           vec.fac <- c(vec.fac, meta.factor[i])
+        }
+      }
+      if (length(vec.fac) !=0L ) {
+        stop (paste(paste(vec.fac, collapse=", "), " are not in metadata", sep=""))
+      } 
+      meta <- meta[, meta.factor, drop=FALSE]  
+    } else {
+      meta <- meta
+    }
+      
+    # get the groups
+    elem.tax  <-  tax.abund(elem, rank=rank, drop.unclassified=drop.unclassified,
+                          count=count, top=top)
+    #return(elem.tax)
+    if ( !is.null(meta) && ! is.null(meta.factor)) {
+      if ( identical(rownames(elem.tax), rownames(meta)) ) {
+        elem.tax1 <- cbind(elem.tax, meta[, meta.factor])
+        names(elem.tax1)[(ncol(elem.tax)+1):ncol(elem.tax1)] <- meta.factor
+      } else {
+        stop("otu table and metadata do not have same sample or sampleIDs are in different order")
+      }
+    } else {
+        elem.tax1 <- elem.tax
+    }
+    #return(elem.tax1)
+    # melt by Sample
+
+    elem.tax2  <-  reshape2::melt(cbind(elem.tax1, Sample=rownames(elem.tax)), id=meta.factor, id.vars=c("Sample", meta.factor),
+                     value.name="RA", variable.name="Taxon")
+    
+    # bind together with appropriate label
+    elem.tax2  <-  cbind(elem.tax2, Region=label)
+    #return(elem.tax2)
+ 
+    taxa[[label]]  <-  elem.tax2
+  }
+  
+  all.taxa  <-  do.call("rbind", taxa)
+  
+  # reorder levels based on order of appearance in table
+  all.taxa$Sample  <-  ordered(all.taxa$Sample, levels=unique(all.taxa$Sample))
+  
+  if ( is.null(main) ) {
+    if (count) {
+      title  <-  paste("Counts of Taxonomic Groups at", 
+                   .get.rank(.get.rank.ind(rank), pretty=TRUE),
+                   "Level")
+    } else {
+      title  <-  paste("Relative Abundance of Taxonomic Groups at", 
+                   .get.rank(.get.rank.ind(rank), pretty=TRUE),
+                   "Level")
+    }
+  } else {
+    title <- main
+  }
+  
+  # we need to use aes_string to pass CRAN check; see 
+  # http://goo.gl/JxgZ9u
+  p  <-  ggplot(all.taxa, aes_string(x="Sample", y="RA", fill="Taxon")) + 
+    geom_bar(position="stack", stat="identity") +
+    #coord_flip() +
+    xlab("Samples") +
+    ggtitle(title) 
+
+  if ( is.null(cex.x) ) {
+     p <- p + theme(legend.position="bottom", 
+          axis.text.x = element_text(angle = 45, vjust = 1, hjust=1),
+          panel.grid.major.x = element_blank())
+  } else {
+     p <- p + theme(legend.position="bottom", 
+      axis.text.x = element_text(size=cex.x, angle = 45, vjust = 1, hjust=1),
+          panel.grid.major.x = element_blank())
+  }
+ 
+  if (!count) {
+    p  <-  p +  scale_y_continuous(labels = percent_format()) +
+      ylab("Relative Abundance")
+  } else {
+    p  <-  p + ylab("Count")
+  }
+  
+
+  if ( !is.null(meta) && ! is.null(meta.factor)) {
+    if (length(meta.factor) ==1L) {
+       formula <- paste("Region", " ~ ", meta.factor, sep="") 
+        p  <-  p + facet_grid(as.formula(formula), scales="free_x")
+    } else {
+       formula <- paste("Region", " ~ ", paste(meta.factor, collapse=" + "), sep="") 
+        p  <-  p + facet_grid(as.formula(formula), scales="free_x")
+    }
+  } else {    
+    p  <-  p + facet_wrap(~Region, scales="free_x")
+  }
+  
+  if (bw) { # for black/white plots
+    warning("the ggplot2 package used to create this graph cannot handle patterning for bar plots; greyscale shading is being used.")
+    p  <-  p + scale_fill_grey(guide = guide_legend(direction="horizontal", ncol=5)) +
+      theme_bw() + theme(legend.position="bottom", axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))
+    
+  } else { # use actual colours
+    
+    cols.needed  <-  length(unique(all.taxa$Taxon))
+    
+    if (cols.needed > 12) {
+      # palette max is 12; so if we have more than 6 entries for otu1/2, we 
+      # need to manually construct a palette to use
+      
+      col.func  <-  colorRampPalette(brewer.pal(12, "Set3"))
+      p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+    } else {
+      # otherwise, we can just use the Set3 palette from RColorBrewer
+      p  <-  p + scale_fill_brewer(palette="Set3",
+                                 guide=guide_legend(direction="horizontal", ncol=5))
+    }
+  }
+  
+  if (save) {
+    .ggsave.helper(file, ext, width, height, plot=p)
+  }
+  
+  p
+}
+
+

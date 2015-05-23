@@ -31,7 +31,8 @@ Type \code{data(ITS1, ITS2, meta)} to load sample data sets of RAM,
 which include the following data of 16 samples:  
 1) ITS1: OTU table of fungal internal transcribed spacer region1
 3) ITS2: OTU table of fungal internal transcribed spacer region2
-3) meta: associated 
+3) meta: associated metadata
+4) alignment for \code{\link{seq_var}}
 
 Type \code{citation("RAM")} for how to cite this package.
 
@@ -65,6 +66,7 @@ data(ITS1, ITS2, meta)
 data <- list(ITS1=ITS1, ITS2=ITS2)
 dissim.heatmap(ITS1, meta, row.factor=c(City="City"))
 dissim.alleig.plot(data)
+data(alignment)
 
 # type library(help = RAM) to get a full listing of help documents
 }

@@ -23,8 +23,10 @@ group.OTU(otu, rank="g", otuIDs="", meta, meta.factor="",
 the OTU table to be analyzed.
 }
   \item{rank}{
-the taxonomic rank(s) of otu classification 
-(see ?RAM.rank.formatting for formatting details).
+optional. if \code{NULL}, the lca of the OTUs will be retrieved; 
+otherwise, the user should provide a valid taxonomic rank that an
+otu being classified to (see ?RAM.rank.formatting for formatting 
+details).
 }
   \item{otuIDs}{
 an vector of otuIDs in the OTU table 

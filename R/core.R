@@ -423,12 +423,17 @@ group.OTU <- function(otu, rank="g", otuIDs="", meta,
   # validate inputs
   valid.OTU(otu)
   .valid.meta(otu1=otu, meta=meta)
-  rank.name <- .get.rank.name(rank, plural=TRUE)
-  rank_name <- .get.rank.name(rank)
-  rank_pat <- .get.rank.pat(rank)
     
   # tax.split
-  otu <- tax.split(otu1=otu, rank=rank)
+  if ( is.null(rank) ) {
+    otu <- LCA.OTU(otu, strip.format=FALSE, drop=TRUE)
+    rank_name <- "LCA"
+  } else {
+    otu <- tax.split(otu1=otu, rank=rank)
+    rank.name <- .get.rank.name(rank, plural=TRUE)
+    rank_name <- .get.rank.name(rank)
+    rank_pat <- .get.rank.pat(rank)
+  }
   otu.p <- cbind(decostand(otu[, -ncol(otu)], "total", 
                     MARGIN=2), otu[[rank_name]])
   colnames(otu.p)[ncol(otu.p)] <- rank_name
@@ -453,9 +458,9 @@ group.OTU <- function(otu, rank="g", otuIDs="", meta,
   }
 
   # combine otu with taxonomy
-  rownames(otu.p.sel) <- paste(rownames(otu.p.sel), 
+  rownames(otu.p.sel) <- paste(paste0("OTU_ID|",rownames(otu.p.sel)), 
                           otu.p.sel[[rank_name]], sep=": ")
-  rownames(otu.sel) <- paste(rownames(otu.sel), 
+  rownames(otu.sel) <- paste(paste0("OTU_ID|",rownames(otu.sel)), 
                           otu.sel[[rank_name]], sep=": ")
 
   # transpose OTU table

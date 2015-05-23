@@ -127,15 +127,16 @@ Wen Chen and Joshua Simpson.
 \seealso{
 \code{\link{decostand}}, \code{\link[Heatplus]{annHeatmap2}}
 }
+
 \examples{
 data(ITS1, meta)
+\dontrun{
 library("Heatplus")
 library("RColorBrewer")
 
 group.heatmap(ITS1, is.OTU=TRUE, meta=meta, rank="c", factors=c(Crop="Crop", 
               City="City"), stand.method="chi", dist.method="euc", 
               hclust.method="mcquitty", cut=0.5)
-\dontrun{
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -11,11 +11,6 @@ correlation<-function(data=NULL, is.OTU=TRUE, meta=NULL, rank="g",
      stop("Error: provide at least one of the following: OTU table, taxonomy abundance matrix, or metadata")
   } 
 
-  #get rank names
-  rank.name<-.get.rank.name(rank, plural=TRUE)
-  rank_name<- .get.rank.name(rank)
-  rank_pat<-.get.rank.pat(rank)
-
   if ( !is.null(meta) ) {
       # metadata of numeric variables only
       col <- sapply(meta, is.numeric)
@@ -90,7 +85,9 @@ correlation<-function(data=NULL, is.OTU=TRUE, meta=NULL, rank="g",
             } else {
                data.sel <- data.sel
             }
-           
+            if ( class(data.sel$taxonomy) != "chr" ) {
+              data.sel$taxonomy<-as.character(data.sel$taxonomy)
+            }
             data.tax <- LCA.OTU(data.sel, strip.format=FALSE, drop=TRUE)
             rownames(data.tax) <- paste( rownames(data.tax), 
                                     data.tax$LCA, sep="_")
@@ -100,7 +97,15 @@ correlation<-function(data=NULL, is.OTU=TRUE, meta=NULL, rank="g",
   
       # plot taxa at given rank    
       if ( !sel.OTU ) {
+          if ( is.null(rank) ) {
+             stop("please provide rank of the selected taxa")
+          }
+          #get rank names
+          rank.name<-.get.rank.name(rank, plural=TRUE)
+          rank_name<- .get.rank.name(rank)
+          rank_pat<-.get.rank.pat(rank)
           if ( is.OTU ) {
+
               data.tax <- tax.abund(data, count=TRUE, rank=rank, 
                                   drop.unclassified=FALSE)
           } else {
@@ -214,7 +219,8 @@ reset.META <- function(meta, factor=NULL, numeric=NULL, date=NULL) {
 }
 
 
-sample.map <- function(meta, siteID="City", maptype="roadmap",  
+sample.map <- function(meta, siteID="City", maptype="roadmap",
+               shape=16, colour=c("red", "blue"),
                lat="Latitude", lon="Longitude", zoom=3, 
                file=NULL, ext=NULL, width=10, height=10) {
 
@@ -241,7 +247,8 @@ sample.map <- function(meta, siteID="City", maptype="roadmap",
   sample <- .samples(meta=meta, siteID=siteID, lat=lat, lon=lon)
 
 
-    if ( !require("gtable") ) {
+    #if ( !require("gtable") ) {
+    if(!requireNamespace('gtable')) {
       stop("package 'gtable' is required for this function")
     }
      
@@ -252,7 +259,7 @@ sample.map <- function(meta, siteID="City", maptype="roadmap",
    #   stop("package 'grid' is required for this function")
     #}
 
-    if ( !require("mapproj") ) {
+    if ( !requireNamespace("mapproj") ) {
       stop("package 'mapproj' is required for this function")
     }
    # if ( !require("RColorBrewer") ) {
@@ -274,17 +281,20 @@ sample.map <- function(meta, siteID="City", maptype="roadmap",
   }
   #return(sample)
   # points1: color gradients for number of samples collected
+  #points1 <- geom_point(data = sample, aes_string(x = "Longitude", 
+  #                y = "Latitude", colour = "Freq", shape="siteID"), 
+  #                    alpha = 0.6,  size = 10)
   points1 <- geom_point(data = sample, aes_string(x = "Longitude", 
-                  y = "Latitude", colour = "Freq", shape="siteID"), 
-                      alpha = 0.6,  size = 10)
+                  y = "Latitude", colour = "Freq"), shape=shape,
+                      alpha = 0.6,  size = sample$Freq)
   # points2: shape for locations
   #points2<-geom_point(data=sample, aes(Longitude, Latitude, 
   #                    shape=rownames(sample)), size=3)
 
   p <- ggmap(osmMap) + 
        points1 + 
-       scale_colour_continuous(name="Frequency", low = "red", 
-               high = "blue", space = "Lab", guide = "colorbar") + 
+       scale_colour_continuous(name="Frequency", low = colour[1], 
+               high = colour[2], space = "Lab", guide = "colorbar") + 
        scale_shape_discrete(name=siteID, breaks=rownames(sample),
                labels=paste(rownames(sample), sep=":", sample$Freq)) + 
        labs(title="Sampling Locations") + 
@@ -333,27 +343,27 @@ sample.sites <- function(meta, siteID="City", marker.size="small",
 
   sample <- .samples(meta=meta, siteID=siteID, lat=lat, lon=lon)
   
-  if ( !require("gtable") ) {
+  if ( !requireNamespace("gtable") ) {
     stop("package 'gtable' is required for this function")
   }
      
-  #if ( !require("ggmap") ) {
+  #if ( !requireNamespace("ggmap") ) {
   #  stop("package 'ggmap' is required for this function")
   #}
   
-  #if ( !require("grid") ) {
+  #if ( !requireNamespace("grid") ) {
   #  stop("package 'grid' is required for this function")
   #}
 
-  if ( !require("mapproj") ) {
+  if ( !requireNamespace("mapproj") ) {
     stop("package 'mapproj' is required for this function")
   }
 
-  #if ( !require("RColorBrewer") ) {
+  #if ( !requireNamespace("RColorBrewer") ) {
   #  stop("package 'RColorBrewer' is required for this function")
   #}    
    
-  #if ( !require("RgoogleMaps") ) {
+  #if ( !requireNamespace("RgoogleMaps") ) {
   #  stop("package 'RgoogleMaps' is required for this function")
   #}
    
@@ -492,7 +502,7 @@ group.diversity <- function(data, meta, factors="", indices="",
       stop(paste("what diversity indices to be compared? indices has to be one or more of the following: ", paste(Indices, collapse=", "), " See ?OTU.diversity for details!", sep=""))
   }
 
-  #if ( !require("reshape2") ) {
+  #if ( !requireNamespace("reshape2") ) {
   #   stop("package 'reshape2' is required for this function")
   #}
 

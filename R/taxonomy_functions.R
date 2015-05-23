@@ -122,7 +122,7 @@ reformat.taxonomy <- function(data, input.ranks=NULL, sep="; ") {
       n.otu <- ncol(otu)
       otu.split <- otu.split[, c(1:(n.otu-1), n)]
             
-      # replace the “unclassified” taxonomy annotation to proper format
+      # replace the 'unclassified' taxonomy annotation to proper format
       for (i in n.names) {
           rank_pat <- .get.rank.pat(i)
           rank_pat2 <- paste0(rank_pat, rank_pat)
@@ -130,7 +130,7 @@ reformat.taxonomy <- function(data, input.ranks=NULL, sep="; ") {
                                   otu.split[[i]])
           otu.split[[i]] <- gsub(rank_pat2, rank_pat, otu.split[[i]])
       }
-      # combine to “taxonomy column
+      # combine to 'taxonomy' column
       n.split <- ncol(otu.split)
       for (i in 1:nrow(otu.split) ) {
           row<-vector();
@@ -371,12 +371,28 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL,
       tax.list[[i]] <- .select.top(tax.list[[i]], top, count, mode)
     }
   }
+
+  tax.out <- list()
+  index <- 1
+  for ( i in 1:length(tax.list) ) {
+    tax <- tax.list[[i]]
+    if ( is.null(tax) ) { break }
+    lab <- names(tax.list)[i]
+    if (is.null(lab)) {
+      lab1 <-index
+    } else {
+       lab1 <- lab
+    }
+    names(tax) <- gsub(" ", "_", names(tax))
+    tax.out[[lab1]] <- tax
+    index <- index + 1
+  }
   
   if (single.rank) {
-    return(tax.list[[1]])
+    return(tax.out[[1]])
     
   } else {
-    return(tax.list)
+    return(tax.out)
   }
 }
 
@@ -597,20 +613,20 @@ col.splitup <- function(df, col="", sep="", max=NULL, names=NULL, drop=TRUE) {
     max <- max(maximum)
     
     if ( max(vec) > def.max ) {
-        warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
-                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
-                  "    Will KEEP all ", max(vec), " and IGNORE user defined ",  def.max, 
-                 " columns", sep=""))
+#        warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
+#                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
+#                  "    Will KEEP all ", max(vec), " and IGNORE user defined ",  def.max, 
+#                 " columns", sep=""))
      } else if ( max(vec) < def.max )  {
-            warning(paste("\n", "    ", col, " can be split to: ", max(vec), 
-                " columns; ", "\n", "    required to be split to: ", max, 
-                " columns; ", "\n", "    column names provided: ", length(names), "\n", 
-                "    Will fill empty strings in the additional ", def.max-max(vec), 
-               " column(s)", sep=""))
+            #warning(paste("\n", "    ", col, " can be split to: ", max(vec), 
+#                " columns; ", "\n", "    required to be split to: ", max, 
+ #               " columns; ", "\n", "    column names provided: ", length(names), "\n", 
+ #               "    Will fill empty strings in the additional ", def.max-max(vec), 
+ #              " column(s)", sep=""))
       } else {
-        warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
-                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
-                  "    ", col, " will be split to: ", max(vec), " columns", sep=""))
+        #warning(paste("\n", "    ", col, " can be split to: ", max(vec), " coloumns; ", 
+#                 "\n", "    required to be split to ", def.max, " columns; ", "\n", 
+#                  "    ", col, " will be split to: ", max(vec), " columns", sep=""))
      }
    
 
@@ -634,9 +650,9 @@ col.splitup <- function(df, col="", sep="", max=NULL, names=NULL, drop=TRUE) {
       if ( length(names) == max ) {
         new.name <- names
       } else if ( length(names) < max ) {
-        warning(paste("\n", "    ", col, " being split to: ", max, 
-                " columns;", "\n", "    column names provided: ", length(names), "; ", "\n",
-                "    will only change the first ", max, " of split columns", sep=""))
+      #warning(paste("\n", "    ", col, " being split to: ", max, 
+      #          " columns;", "\n", "    column names provided: ", length(names), "; ", "\n",
+      #          "    will only change the first ", max, " of split columns", sep=""))
         new.name <- c(names, colnames(new)[(length(names)+1):max])
       # } 
       # since max is the maximum of length(names), pre-defined max and max(vec), so 
@@ -654,10 +670,10 @@ col.splitup <- function(df, col="", sep="", max=NULL, names=NULL, drop=TRUE) {
     colnames(new) <- new.name    
     # for data.table dt[, setdiff(colnames(dt),col), with=FALSE] 
     if ( ! drop ) {
-        warning(paste("    Keep ", col, " column in output!", sep=""))
+        #warning(paste("    Keep ", col, " column in output!", sep=""))
         df.new <- cbind(df, new)
     } else {
-        warning(paste("    Drop ", col, " column in output!", sep=""))
+        #warning(paste("    Drop ", col, " column in output!", sep=""))
         df.new <- cbind(df[, setdiff(colnames(df),col)], new)
     }
     return(df.new)
