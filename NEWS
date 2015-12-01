@@ -2,6 +2,59 @@
 \title{RAM News}
 \encoding{UTF-8}
 
+\section{Changes in version 1.2.1.2}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item Fixed a bug in \code{shared.OTU} where an error occurs 
+     when no otus are shared by all samples.
+
+     \item Fixed a bug in \code{shared.Taxa} where an error occurs 
+     when no taxa are shared by all samples.
+
+     \item Resolved the conflit between the 'summary.cca' function 
+     of 'vegan' and the one of 'ade4'. in an internal function 
+     .analysis.helper
+
+     \item Fixed seq_var to work with gridExtra version 2.0.0
+    
+    }
+  } % bug fixes
+} % version 1.2.1.2
+
+\section{Changes in version 1.2.1.1}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item Fixed a bug in \code{filter.OTU} for filtering by number
+     of sequences per sample.
+    
+    }
+  } % bug fixes
+} % version 1.2.1.1
+
 \section{Changes in version 1.2.1}{
 
    \subsection{GENERAL}{

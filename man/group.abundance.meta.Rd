@@ -91,7 +91,7 @@ data(ITS1, ITS2, meta)
 \dontrun{
 # plot the relative abundance at the class level to the screen, drop
 # unclassified taxa
-group.abundance(data, top=10, rank="family", drop.unclassified=TRUE, 
+group.abundance.meta(data, top=10, rank="family", drop.unclassified=TRUE, 
                 meta=meta, meta.factor=c("Year", "Crop", "City"))
 
 }

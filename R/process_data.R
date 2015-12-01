@@ -38,7 +38,7 @@ filter.OTU <- function(data, percent=NULL, number=NULL) {
                      MARGIN=1, FUN=max) > percent)]
     } else if (!is.null(number)) {
         # select OTUs more than number sequences in total
-        sel<-rownames(otu.p)[which(rowSums(otu[, -ncol(otu)]) > number)]
+        sel<-rownames(otu)[which(rowSums(otu[, -ncol(otu)]) > number)]
     } else {
         warning("no filtering requirment provided, will return the original otus")
     } 

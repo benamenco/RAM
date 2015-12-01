@@ -78,73 +78,73 @@ valid.taxonomy <- function(data) {
 
 
 reformat.taxonomy <- function(data, input.ranks=NULL, sep="; ") {
-
+  
   if ( class(data) != "list" ) { 
-     stop("provide all otu tables as list. See ?RAM.input.formatting")
+    stop("provide all otu tables as list. See ?RAM.input.formatting")
   }
   new.otu <- list()
   labels <- names(data)
   # process each otu
-  for (i in 1:length(data) ) {reformat.taxonomy
-      label <- names(data)[i]
-      otu <- data[[i]]
-      if (is.null(otu)) {
-          break
+  for (i in 1:length(data) ) {
+    label <- names(data)[i]
+    otu <- data[[i]]
+    if (is.null(otu)) {
+      break
+    }
+    valid.OTU(otu)
+    ls <- list()
+    ls[[label]] <- otu
+    valid.taxonomy(data=ls)
+    
+    # default outputs for RAM taxonomy
+    prefix <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
+    names <- c("kingdom", "phylum", "class", "order", "family",
+               "genus", "species")
+    otu$taxonomy <- as.character(otu$taxonomy)
+    
+    # reformat 
+    # check whether the 'input.ranks include names
+    input.ranks <- tolower(input.ranks)
+    if ( is.null(input.ranks) || !any(input.ranks %in% names) ) {
+      stop("please provide ALL taxonomic ranks in the input OTU tables, see ?reformat.taxonomy")
+    } 
+    
+    # split the current taxonomy column
+    # remove the last ";" at the end of line
+    otu$taxonomy <- gsub("[; ]+$", "", otu$taxonomy, perl=TRUE)
+    suppressWarnings(otu.split <- col.splitup(otu, col="taxonomy", 
+                                              sep=sep, drop=TRUE,
+                                              names=input.ranks))
+    
+    # select columns only belong to 
+    n <- which(colnames(otu.split) %in% names)
+    n.names <- intersect(colnames(otu.split), names)
+    n.otu <- ncol(otu)
+    otu.split <- otu.split[, c(1:(n.otu-1), n)]
+    
+    # replace the 'unclassified' taxonomy annotation to proper format
+    for (i in n.names) {
+      rank_pat <- .get.rank.pat(i)
+      rank_pat2 <- paste0(rank_pat, rank_pat)
+      otu.split[[i]] <- paste0(substring(i,1,1), "__", 
+                               otu.split[[i]])
+      otu.split[[i]] <- gsub(rank_pat2, rank_pat, otu.split[[i]])
+    }
+    # combine to 'taxonomy' column
+    n.split <- ncol(otu.split)
+    for (i in 1:nrow(otu.split) ) {
+      row<-vector();
+      n <- n.otu:n.split
+      for (j in n) {
+        row<-c(row, otu.split[i,j])
       }
-      valid.OTU(otu)
-      ls <- list()
-      ls[[label]] <- otu
-      valid.taxonomy(data=ls)
-            
-      # default outputs for RAM taxonomy
-      prefix <- c("k__", "p__", "c__", "o__", "f__", "g__", "s__")
-      names <- c("kingdom", "phylum", "class", "order", "family",
-              "genus", "species")
-      otu$taxonomy <- as.character(otu$taxonomy)
-
-      # reformat 
-      # check whether the 'input.ranks include names
-      input.ranks <- tolower(input.ranks)
-      if ( is.null(input.ranks) || !any(input.ranks %in% names) ) {
-        stop("please provide ALL taxonomic ranks in the input OTU tables, see ?reformat.taxonomy")
-      } 
-
-      # split the current taxonomy column
-      # remove the last ";" at the end of line
-      otu$taxonomy <- gsub("[; ]+$", "", otu$taxonomy, perl=TRUE)
-      suppressWarnings(otu.split <- col.splitup(otu, col="taxonomy", 
-                                         sep=sep, drop=TRUE,
-                                         names=input.ranks))
-
-      # select columns only belong to 
-      n <- which(colnames(otu.split) %in% names)
-      n.names <- intersect(colnames(otu.split), names)
-      n.otu <- ncol(otu)
-      otu.split <- otu.split[, c(1:(n.otu-1), n)]
-            
-      # replace the 'unclassified' taxonomy annotation to proper format
-      for (i in n.names) {
-          rank_pat <- .get.rank.pat(i)
-          rank_pat2 <- paste0(rank_pat, rank_pat)
-          otu.split[[i]] <- paste0(substring(i,1,1), "__", 
-                                  otu.split[[i]])
-          otu.split[[i]] <- gsub(rank_pat2, rank_pat, otu.split[[i]])
-      }
-      # combine to 'taxonomy' column
-      n.split <- ncol(otu.split)
-      for (i in 1:nrow(otu.split) ) {
-          row<-vector();
-          n <- n.otu:n.split
-          for (j in n) {
-              row<-c(row, otu.split[i,j])
-          }
-          otu.split[i, "taxonomy"] <- paste(row, collapse="; ");
-          otu.split[i, "taxonomy"] <- gsub(";[ ]+$", "", 
-                                      otu.split[i,"taxonomy"], 
+      otu.split[i, "taxonomy"] <- paste(row, collapse="; ");
+      otu.split[i, "taxonomy"] <- gsub(";[ ]+$", "", 
+                                       otu.split[i,"taxonomy"], 
                                        perl=TRUE)
-      }  
-      otu.split <- otu.split[, c(1:(n.otu-1), ncol(otu.split))]
-      new.otu[[label]] <- otu.split
+    }  
+    otu.split <- otu.split[, c(1:(n.otu-1), ncol(otu.split))]
+    new.otu[[label]] <- otu.split
   }      
   return(new.otu)
 }
@@ -324,7 +324,7 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL,
     # update taxonomy label to "taxonomy"
     names(tax.list[[i]])[dim(tax.list[[i]])[2]] <- "taxonomy" 
     # aggregate the otu table by taxonomy rank names 
-    tax.list[[i]] = aggregate(tax.list[[i]][ , -dim(tax.list[[i]])[2]],  
+    tax.list[[i]] = stats::aggregate(tax.list[[i]][ , -dim(tax.list[[i]])[2]],  
           by = list(tax.list[[i]]$taxonomy), FUN = .sumcol) 
     # change row names to header provided by aggregate
     rownames(tax.list[[i]]) <- tax.list[[i]][ , 1] 
@@ -335,7 +335,7 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL,
     
     # if count is false, return relative abundance
     if (!count) {
-      tax.list[[i]] <- decostand(tax.list[[i]], method="total")
+      tax.list[[i]] <- vegan::decostand(tax.list[[i]], method="total")
     }
     
     # order the table by column sums
@@ -433,7 +433,7 @@ tax.abund <- function(otu1, otu2=NULL, rank=NULL,
     # we need the 'count' parameter to determine whether we need to standardize
     # the data ourselves or not
     if (count) {
-      abund.stand <- decostand(abund, "total")
+      abund.stand <- vegan::decostand(abund, "total")
     } else {
       abund.stand <- abund
     }

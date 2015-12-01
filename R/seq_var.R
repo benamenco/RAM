@@ -8,7 +8,7 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
                      den.cex.axis.text.x=6, den.cex.axis.text.y=6,
                      den.cex.xlab=6, den.cex.ylab=6, frame.col="blue",
                      table.cex=8, main=FALSE, main.cex=14,
-                     file=NULL, ext=NULL, width=8, height=8) {
+                     file=NULL, width=8, height=8) {
   #library(ape)
   #library(phangorn)
   #library(gdata)
@@ -29,7 +29,6 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
   }
 
    save <- !is.null(file)
-  .valid.plot.settings(file, ext)
 
   # taxon
   if ( is.null(taxon) ) {
@@ -93,8 +92,9 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
   #system.time(dm.m.split <- col.splitup(dm.m.split, col="Var1_split", sep=":", drop=TRUE))
   #system.time(dm.m.split2 <- col.splitup(dm.m.split, col="Var2_split", sep=":", drop=TRUE))
   system("tr < temp.dm.m.csv -s ':' | tr ':' ',' > temp.dm.m.split.csv")
-  dm.m.split <- RAM::fread.meta("temp.dm.m.split.csv")
-  
+    #return(dm.m)
+  dm.m.split <- suppressWarnings(RAM::fread.meta("temp.dm.m.split.csv"))
+
 
   # renames columns
   num_col <- 2*col.total+1
@@ -140,14 +140,14 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
   
   #return(list(intra=intra, inter=inter))
   # convert summary(intra$distance) to dataframe
-  intra.sum<-as.data.frame(t(summary(intra_ord$distance)) )
+  intra.sum<-as.data.frame(t(round(summary(intra_ord$distance), 4)))
   intra.sum <- intra.sum[, -1]
   rownames(intra.sum) <- intra.sum$Var2
   intra.sum <- intra.sum[, -1, drop=FALSE]
   names(intra.sum) <- "Intraspecific"
 
   # convert summary(inter$distance) to dataframe
-  inter.sum<-as.data.frame(t(summary(inter_ord$distance)) )
+  inter.sum<-as.data.frame(t(round(summary(inter_ord$distance), 4)))
   inter.sum <- inter.sum[, -1]
   rownames(inter.sum) <- inter.sum$Var2
   inter.sum <- inter.sum[, -1, drop=FALSE]
@@ -159,10 +159,16 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
   }
   
   # reorder by distance
-  suppressWarnings(intra_ord$seq1_species <- factor(intra_ord$seq1_species , levels = intra_ord[order(intra_ord$distance, decreasing=TRUE), "seq1_species"]))
-  suppressWarnings(intra_ord$seq1_species <- factor(intra_ord$seq1_species , levels = rev(levels(factor(intra_ord$seq1_species)))))
-  suppressWarnings(inter_ord$seq1_species <- factor(inter_ord$seq1_species , levels = inter_ord[order(inter_ord$distance, decreasing=TRUE), "seq1_species"]))
-  suppressWarnings(inter_ord$seq1_species <- factor(inter_ord$seq1_species , levels = rev(levels(factor(inter_ord$seq1_species)))))
+  #suppressWarnings(intra_ord$seq1_species <- factor(intra_ord$seq1_species , levels = intra_ord[order(intra_ord$distance, decreasing=TRUE), "seq1_species"]))
+  #suppressWarnings(intra_ord$seq1_species <- factor(intra_ord$seq1_species , levels = rev(levels(factor(intra_ord$seq1_species)))))
+  #suppressWarnings(inter_ord$seq1_species <- factor(inter_ord$seq1_species , levels = inter_ord[order(inter_ord$distance, decreasing=TRUE), "seq1_species"]))
+  #suppressWarnings(inter_ord$seq1_species <- factor(inter_ord$seq1_species , levels = rev(levels(factor(inter_ord$seq1_species)))))
+  # reorder by median
+  ord_intra <- order(as.numeric(by(intra_ord$distance, intra_ord$seq1_species, median)))
+  intra_ord$seq1_species <- ordered(intra_ord$seq1_species, levels=levels(factor(intra_ord$seq1_species))[ord_intra])
+  
+  ord_inter <- order(as.numeric(by(inter_ord$distance, inter_ord$seq1_species, median)))
+  inter_ord$seq1_species <- ordered(inter_ord$seq1_species, levels=levels(factor(inter_ord$seq1_species))[ord_inter])  
   
   #return(list(intra=intra_ord, inter=inter_ord))
   # Plot intra-specific variation
@@ -215,13 +221,21 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
      title=textGrob("")
   }
 
+  # table theme
+  t_theme <- getFromNamespace("ttheme_default", "gridExtra")(core=list(fg_params=list(fontsize=table.cex)), colhead=list(fg_params=list(fontsize=table.cex, fontface="bold")))
 
   p1 <- arrangeGrob(bp_intra2)
-  p2 <- arrangeGrob(tableGrob(intra.sum, gp=gpar(fontsize=table.cex)), bp_intra_density, ncol=1)
+  intra.sum<-cbind(rownames(intra.sum), intra.sum)
+  rownames(intra.sum) <-NULL
+  names(intra.sum)[1]<-""
+  p2 <- arrangeGrob(tableGrob(intra.sum, rows=NULL, cols=colnames(intra.sum), t_theme), bp_intra_density, ncol=1)
   p3 <- arrangeGrob(grobTree(arrangeGrob(p1, p2, ncol=2, widths=c(5, 2), clip=TRUE), rectGrob(.5, .5, width=unit(.99, "npc"), height=unit(0.99, "npc"), gp=gpar(lwd=2, fill=NA, col=frame.col, alpha=0.2))))
 
   p4 <- arrangeGrob(bp_inter2)
-  p5 <- arrangeGrob(tableGrob(inter.sum, gp=gpar(fontsize=table.cex)), bp_inter_density, ncol=1)
+  inter.sum<-cbind(rownames(inter.sum), inter.sum)
+  rownames(inter.sum) <-NULL
+  names(inter.sum)[1]<-""
+  p5 <- arrangeGrob(tableGrob(inter.sum, rows=NULL, cols=colnames(inter.sum), t_theme), bp_inter_density, ncol=1)
   p6 <- arrangeGrob(grobTree(arrangeGrob(p4, p5, ncol=2, widths=c(5, 2), clip=TRUE), rectGrob(.5, .5, width=unit(.99, "npc"), height=unit(0.99, "npc"), gp=gpar(lwd=2, fill=NA, col=frame.col, alpha=0.2))))
 
   if ( main | is.character(main) ) {
@@ -231,9 +245,15 @@ seq_var <- function (taxon=NULL, region="ITS", align=NULL, file.align=NULL,
   }
 
   if (save) {
-    .ggsave.helper(file, ext, width, height, plot=p7)
+    grid.newpage();
+    pdf(file=file, width=width, height=height)
+    grid.draw(p7)
+    dev.off()
+    grid.newpage();
+    grid.draw(p7);
   } else {
-    print(p7)
+    grid.newpage();
+    grid.draw(p7)
   }
   system("rm temp.*.csv")
 

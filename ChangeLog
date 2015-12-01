@@ -1,6 +1,20 @@
-$Date: 2015-05-15 12:06:44 +0200 (Friday, 15 May 2015) $
+$Date: 2015-11-28 12:06:44 +0200 (Friday, 28 November 2015) $
 
 RAM RELEASE VERSIONS at http://cran.r-project.org/
+
+Version 1.2.1.2 (released November 28, 2015)
+   
+    * shared.OTU: fixed a bug where an error has occured when no otus are shared by all samples. 
+
+    * shared.Taxa: fixed a bug where an error has occured when no taxa are shared by all samples. 
+
+    * .analysis.helper: internal function. Resolved the conflit between the 'summary.cca' function of 'vegan' and the one of 'ade4'.
+
+    * seq_var:  fixed to work with gridExtra version 2.0.0
+
+Version 1.2.1.1 (released May 28, 2015)
+   
+    * filter.OTU: fixed a bug in row selection by number of seqs.
 
 Version 1.2.1 (released May 15, 2015)
    

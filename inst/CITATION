@@ -4,12 +4,13 @@ citation(auto=meta)
 
 year <- sub("-.*", "", meta$Date) 
 note <- sprintf("R package version %s", meta$Version)  
-url <- "http://cran.r-project.org/web/packages/RAM/index.html"
+url <- "http://cran.r-project.org/package=RAM"
 
 citEntry(entry = "misc", 
          author = personList(as.person("Wen Chen"),
-                             as.person("Joshua Simpson")),
-         title = "RAM: r for Amplicon-Based Metagenomics",
+                             as.person("Joshua Simpson"), 
+                             as.person("C. Andre Levesque")),
+         title = "RAM: R for Amplicon-Sequencing-Based Microbial-Ecology",
          year = year,
          note = note,
          url = url,

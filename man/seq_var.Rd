@@ -19,7 +19,7 @@ seq_var(taxon=NULL, region="ITS", align=NULL, file.align=NULL,
         den.cex.axis.text.x=6, den.cex.axis.text.y=6,
         den.cex.xlab=6, den.cex.ylab=6, frame.col="blue",
         table.cex=8, main=FALSE, main.cex=14,
-        file=NULL, ext=NULL, width=8, height=8)
+        file=NULL, width=8, height=8)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -108,12 +108,8 @@ or a string
 font size of the title of the plot
 }        
   \item{file}{
-whether or not save the plot to a file. 
+whether or not save the plot to a PDF file. 
 } 
-  \item{ext}{
-the file type to be used; one of \code{"pdf"}, \code{"png"}, 
-\code{"tiff"}, \code{"bmp"}, \code{"jpg"}, or \code{"svg"}.
-}
   \item{width}{
 width of the plot
 } 

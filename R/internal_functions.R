@@ -79,21 +79,6 @@
     return(tax.classes.pattern[.get.rank.ind(rank)])
 }
 
-.get.rank <- function(ind, pretty=FALSE) {
-    # we do not validate the rank here, as some methods call this
-    # in a for loop when rank=NULL
-    tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
-    
-    if (pretty) {
-        pretty.rank <- tax.classes[ind]
-        # capitalize the first letter (for plots)
-        pretty.rank <- .capitalize(pretty.rank)
-        pretty.rank
-        
-    } else {
-        tax.classes[ind]
-    }
-}
 
 .get.rank.name <- function(rank, plural=FALSE, pretty=FALSE) {
   tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
@@ -206,11 +191,11 @@
     rfactor.numcols <- length(levels(row.factor))
     
     if (rfactor.numcols > 9) {
-      col.func  <-  colorRampPalette(brewer.pal(9, "Pastel1"))
+      col.func  <-  grDevices::colorRampPalette(brewer.pal(9, "Pastel1"))
       rfactor.pal <- col.func(rfactor.numcols)
       # warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels; dropping some levels.")
     } else {
-      rfactor.pal <- suppressWarnings(brewer.pal(length(levels(row.factor)), "Pastel1"))
+      rfactor.pal <- suppressWarnings(RColorBrewer::brewer.pal(length(levels(row.factor)), "Pastel1"))
     }
     # get a vector with the appropriate colour at each index
     rfactor.cols <- rfactor.pal[as.numeric(row.factor)]
@@ -241,7 +226,7 @@
     cfactor.numcols <- length(levels(col.factor))
     
     if (cfactor.numcols > 9) {
-      col.func  <-  colorRampPalette(brewer.pal(9, "Pastel1"))
+      col.func  <-  grDevices::colorRampPalette(brewer.pal(9, "Pastel1"))
       cfactor.pal <- col.func(cfactor.numcols)
       # warning("the meta factor palette can only contain 8 colours, and there are more than 8 levels. Some colours are being recycled in your plot (be careful!).")
     } else {
@@ -369,18 +354,18 @@
   tax <- tax.abund(otu, rank=rank, drop.unclassified=FALSE, count=TRUE)
   #return(tax)
   if(all(rownames(tax)==rownames(meta))) {
-    tax.factor<-aggregate(tax, by=list(meta[[meta.factor]]), FUN=sum)
+    tax.factor <- stats::aggregate(tax, by=list(meta[[meta.factor]]), FUN=sum)
     rownames(tax.factor)<-tax.factor[,"Group.1"]
-    tax.factor<-tax.factor[,-1]
+    tax.factor <- tax.factor[,-1]
   } else {
     stop("Error: otu and metadata have different samples")
   }
   #return(tax.factor)
-  tax.factor<-tax.factor[, order(colSums(tax.factor), decreasing=TRUE)]
+  tax.factor <- tax.factor[, order(colSums(tax.factor), decreasing=TRUE)]
   if(!isTRUE(relative.abund)) {
-    tax.factor<-tax.factor
+    tax.factor <- tax.factor
   } else {
-    tax.factor<-decostand(tax.factor, "total")
+    tax.factor <- vegan::decostand(tax.factor, "total")
     
   }
 

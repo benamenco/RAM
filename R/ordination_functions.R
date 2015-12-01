@@ -1,4 +1,5 @@
 .analysis.helper <- function(otu1, otu2=NULL, meta, full, exclude, mode, rank, na.action=na.exclude) {
+  
   valid.OTU(otu1, otu2)
   .valid.meta(otu1, otu2, meta)
   .valid.rank(rank)
@@ -14,9 +15,9 @@
   
   tax<-tax.abund(otu1, otu2=NULL, rank=rank, drop.unclassified=TRUE,
                  top=NULL, count=TRUE, mode="number")
-
+  
   meta <- filter.META(meta=meta, excl.na=FALSE)
-    
+  
   if (is.null(exclude)) {
     meta.remain <- meta
   } else {
@@ -24,9 +25,9 @@
   }
   
   if (full) {
-    form <- formula(tax ~ .)
+    form <- stats::formula(tax ~ .)
   } else {
-    form <- formula(tax ~ 1)
+    form <- stats::formula(tax ~ 1)
   }
   
   if (mode == "cca") {
@@ -35,13 +36,14 @@
     mod <- vegan::rda(form, data=meta.remain, na.action=na.action)
   }
   
-  good <- goodness(mod,summ = TRUE)
-  vif.scores <- vif.cca(mod)
-  pct.var <- summary(mod)$concont$importance
+  good <- vegan::goodness(mod,summ = TRUE)
+  vif.scores <- vegan::vif.cca(mod)
+  #pct.var <- vegan:::summary.cca(mod)$concont$importance
+  pct.var <- utils::getFromNamespace("summary.cca", "vegan")(mod)$concont$importance
   CCA.eig <- mod$CCA$eig
   CA.eig <- mod$CA$eig
   anv <- vegan::anova.cca(mod)
-
+  
   return(list(GOF=good, VIF=vif.scores, percent_variation=pct.var, CCA_eig=CCA.eig, 
               CA_eig=CA.eig, anova=anv))
 }

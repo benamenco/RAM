@@ -10,8 +10,8 @@ taxa in each level of a given metadata variable
 }
 \usage{
 group.Taxa.bar(data, is.OTU=TRUE, rank="g", taxa="", 
-               meta, meta.factor="", cex.y=5, cex.x=5, 
-               bar.width=NULL, RAM.theme=NULL,
+               meta, meta.factor="", func="sum", cex.y=5, cex.x=5, 
+               cex.main=10, bar.width=NULL, RAM.theme=NULL,
                col.pal=NULL, main="", file=NULL, ext=NULL, 
                height=8, width=16)
 }
@@ -37,11 +37,18 @@ the metadata table to be used (must have same samples as \code{data}.
   \item{meta.factor}{
 a character string. Must be one of the metadata variables.
 }
+  \item{func}{
+function to be used to aggregate count data, e.g. "sum" or "mean",
+default is "sum"
+}
   \item{cex.y}{
 size of y axis tick labels.
 }
   \item{cex.x}{
 size of x axis tick labels.
+}
+  \item{cex.main}{
+size of title.
 }
   \item{bar.width}{
 width of bars
@@ -96,7 +103,7 @@ data(ITS1, ITS2, meta)
 taxa <- c("Fusarium", "Alternaria", "Cladosporium")
 group.Taxa.bar(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
                rank="g", taxa=taxa, meta=meta, meta.factor="City", 
-               cex.y=5, cex.x=5, bar.width=0.5, RAM.theme=RAM.color())
+               cex.y=5, cex.x=5, bar.width=1, RAM.theme=RAM.color())
 \dontrun{
 # change default color schemes
 col <- c("dodgerblue1", "darkcyan")
@@ -104,17 +111,21 @@ taxa.1 <- c("Fusarium", "Alternaria", "Cladosporium", "Verticillium",
            "Kondoa")
 group.Taxa.bar(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
                rank="g", taxa=taxa.1, meta=meta, meta.factor="City", 
-               cex.y=5, cex.x=5, bar.width=0.5, RAM.theme=NULL,
+               cex.y=5, cex.x=5, bar.width=1, RAM.theme=NULL,
                col.pal=col)
+group.Taxa.bar(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
+               rank="g", taxa=taxa.1, meta=meta, meta.factor="City", 
+               cex.y=5, cex.x=5, bar.width=1, RAM.theme=NULL,
+               col.pal=col, func="mean")
 # change ggplot theme
 group.Taxa.bar(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
                rank="g", taxa=taxa.1, meta=meta, meta.factor="City", 
-               cex.y=5, cex.x=5, bar.width=0.5, 
+               cex.y=5, cex.x=5, bar.width=1, 
                col.pal=col, RAM.theme=RAM.border())
 # save the plot
 group.Taxa.bar(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, 
                rank="g", taxa=taxa.1, meta=meta, meta.factor="City", 
-               cex.y=5, cex.x=5, bar.width=0.5, RAM.theme=NULL,
+               cex.y=5, cex.x=5, bar.width=1, RAM.theme=NULL,
                col.pal=col,main="", file="path/to/filename.pdf", 
                ext="pdf", height=8, width=16)
 }

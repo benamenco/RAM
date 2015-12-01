@@ -7,21 +7,21 @@ shared.OTU <- function(data) {
   ###check for zero entries?
   num.data <- length(data)
   labels <- names(data)  
-
+  
   shared <- list()
   for ( i in 1:length(data) ) {
     elem <- data[[i]]
     if ( is.null(elem) ) { break }
     label <- names(data)[i]
-
+    
     otu <- transpose.OTU(elem)
     otu.pa <- decostand(otu, "pa")
     otu.lca <- LCA.OTU(otu=elem)
- 
+    
     # for readability
     x <- nrow(otu.pa)
     y <- ncol(otu.pa)
-  
+    
     if(length(which(colSums(otu.pa) == x))==0) {
       warning(paste("NO OTUs are shared by all samples in ", label, sep=""))
     } 
@@ -29,44 +29,48 @@ shared.OTU <- function(data) {
     num.otu.one.sample <- length(which(colSums(otu.pa) == 1))
     num.otu.mult.sample <- length(which(colSums(otu.pa) > 1))
     num.otu.all.sample <- length(which(colSums(otu.pa) == x))
-  
+    
     per.otu.one.sample <- num.otu.one.sample / y
     per.otu.all.sample <- num.otu.all.sample / y
-  
-    num.seq.shared.otu <- sum(otu[ ,colnames(otu) %in% 
-                   colnames(otu.pa)[which(colSums(otu.pa) == x)]])
+    
+    if(length(colnames(otu.pa)[which(colSums(otu.pa) == x)]) == 0){
+      num.seq.shared.otu <- 0
+    } else {
+      num.seq.shared.otu <- sum(otu[ ,colnames(otu) %in% 
+                                      colnames(otu.pa)[which(colSums(otu.pa) == x)]])
+    }
     per.seq.shared.otu <- num.seq.shared.otu / sum(otu)
-  
+    
     # get the OTU #s for all OTUs present in all samples
     otu.IDs <- colnames(otu.pa[ ,colSums(otu.pa) == x])
     # make a list of the form "OTU-taxonomic_information"
     sel <- which(rownames(otu.lca) %in% otu.IDs)
     tax <- paste(otu.IDs, otu.lca[sel, "LCA"], sep=": ")
-  
+    
     val <- list(num.otu.one.sample, num.otu.mult.sample, 
-                  num.otu.all.sample, per.otu.one.sample, 
-                  per.otu.all.sample, num.seq.shared.otu,
-                  per.seq.shared.otu, otu.IDs, tax)
-  
+                num.otu.all.sample, per.otu.one.sample, 
+                per.otu.all.sample, num.seq.shared.otu,
+                per.seq.shared.otu, otu.IDs, tax)
+    
     # format numerical data?
     #val <- format(round(val[1:7], 2), nsmall=2)
-  
+    
     names(val) <- c("#_of_OTUs_in_1_sample", 
-                      "#_of_OTUs_in_>1_sample", 
-                      "#_of_OTUs_in_all_samples", 
-                      "%_of_OTUs_in_one_sample",
-                      "%_of_OTUs_in_all_samples", 
-                      "#_of_sequence_in_shared_OTUs",
-                      "%_of_sequence_in_shared_OTUs", 
-                      "OTUs_in_all_samples", 
-                      "LCA_of_OTUs_in_all_samples")
-   shared[[label]] <- val
- }
- if (length(shared) == length(data) ) {
+                    "#_of_OTUs_in_>1_sample", 
+                    "#_of_OTUs_in_all_samples", 
+                    "%_of_OTUs_in_one_sample",
+                    "%_of_OTUs_in_all_samples", 
+                    "#_of_sequence_in_shared_OTUs",
+                    "%_of_sequence_in_shared_OTUs", 
+                    "OTUs_in_all_samples", 
+                    "LCA_of_OTUs_in_all_samples")
+    shared[[label]] <- val
+  }
+  if (length(shared) == length(data) ) {
     return(shared)
- } else {
+  } else {
     warning(paste("not all data being processed: only ", names(shared), " being processed", sep=""))
- }
+  }
 }
 
     
@@ -103,8 +107,7 @@ percent.classified <- function(data, ranks=c("f","g")) {
       if(length(grep(blacklist, elem_rank$taxonomy)) == 0) {
           elem_ided <- elem_rank
       } else {      
-          elem_ided <- elem_rank[!grepl(blacklist, 
-                                  elem_rank$taxonomy),]
+          elem_ided <- elem_rank[!grepl(blacklist, elem_rank$taxonomy), , drop=FALSE]
       }
       name <- paste("%_OTU_classified_at_", rank_name, "_level:", sep="")
       rk.classified[[name]] <- (100 * nrow(elem_ided) / nrow(elem))
@@ -177,7 +180,7 @@ OTU.recap <- function(data, ranks=c("p", "c", "o", "f", "g"),
       singleton_OTUs_num <-  nrow(otu[singleton, ])
       singleton_OTUs_percent <- round(100*nrow(otu[rowSums(otu[, 
                            -ncol(otu)])==1,])/nrow(otu), digits=3)
-      singleton_seqs_percent <-  round(100*nrow(otu[rowSums(otu[, 
+      singleton_seqs_percent <- round(100*nrow(otu[rowSums(otu[, 
                                -ncol(otu)])==1,])/total_seqs, digits=3)
     }
 
@@ -403,27 +406,27 @@ evenness <- function(data, index="simpson") {
 .true.div <- function(OTU, index) {
   
   if (index == "simpson") {
-    return(diversity(OTU, index="invsimpson"))
+    return(vegan::diversity(OTU, index="invsimpson"))
     
   } else if (index == "shannon") {
-    return(exp(diversity(OTU, index="shannon", base = exp(1))))
+    return(exp(vegan::diversity(OTU, index="shannon", base = exp(1))))
   }
 }
 
 .true.even <- function(OTU, index) {
   
   if (index == "simpson") {
-    return(diversity(OTU, index="invsimpson") / specnumber(OTU))
+    return(vegan::diversity(OTU, index="invsimpson") / specnumber(OTU))
     
   } else if (index == "shannon") {
-    return(diversity(OTU, index="shannon", base = exp(1)) / 
-              log(specnumber(OTU), base=exp(1)))
+    return(vegan::diversity(OTU, index="shannon", base = exp(1)) / 
+             log(vegan::specnumber(OTU), base=exp(1)))
   }
 }
 
 
 OTU.diversity<-function(data, meta) {
-
+  
   if ( class(data) != "list" ) {
     stop("please provide otu tables as list; see ?RAM.input.formatting")
   } 
@@ -431,7 +434,7 @@ OTU.diversity<-function(data, meta) {
   ###check for zero entries?
   num.data <- length(data)
   labels <- names(data)  
-
+  
   for (i in 1:length(data) ){
     label <- names(data)[i]
     otu <- data[[i]]
@@ -444,25 +447,22 @@ OTU.diversity<-function(data, meta) {
     otu.t<-transpose.OTU(otu)
     
     # add columns for different diversity indices
-    meta[[paste("spec", label, sep="_")]] <- specnumber(otu.t)
-    meta[[paste("sim", label, sep="_")]] <- diversity(otu.t, 
-                                     index="simpson", MARGIN=1)
-    meta[[paste("invsim", label, sep="_")]] <- diversity(otu.t, 
-                                   index="invsimpson", MARGIN=1)
-    meta[[paste("shan", label, sep="_")]] <- diversity(otu.t, 
-                                     index="shannon", MARGIN=1)
+    meta[[paste("spec", label, sep="_")]] <- vegan::specnumber(otu.t)
+    meta[[paste("sim", label, sep="_")]] <- vegan::diversity(otu.t, index="simpson", MARGIN=1)
+    meta[[paste("invsim", label, sep="_")]] <- vegan::diversity(otu.t, index="invsimpson", MARGIN=1)
+    meta[[paste("shan", label, sep="_")]] <- vegan::diversity(otu.t, index="shannon", MARGIN=1)
     data2<-list(otu)
     names(data2)[1] <- label
     meta[[paste("sim_even", label, sep="_")]] <- as.vector(t(
-                                  evenness(data=data2)[label,]))
+      evenness(data=data2)[label,]))
     meta[[paste("shan_even", label, sep="_")]] <- as.vector(t(
-                  evenness(data=data2, index="shannon")[label,]))
+      evenness(data=data2, index="shannon")[label,]))
     meta[[paste("sim_trudiv", label, sep="_")]] <- as.vector(t(
-                             true.diversity(data=data2)[label,]))
+      true.diversity(data=data2)[label,]))
     meta[[paste("shan_trudiv", label, sep="_")]] <- as.vector(t(
-           true.diversity(data=data2, index="shannon")[label,]))
-    meta[[paste("chao", label, sep="_")]] <- estimateR(otu.t)["S.chao1",]
-    meta[[paste("ACE", label, sep="_")]] <- estimateR(otu.t)["S.ACE",] 
+      true.diversity(data=data2, index="shannon")[label,]))
+    meta[[paste("chao", label, sep="_")]] <- vegan::estimateR(otu.t)["S.chao1",]
+    meta[[paste("ACE", label, sep="_")]] <- vegan::estimateR(otu.t)["S.ACE",] 
     
   }
   
@@ -564,16 +564,16 @@ group.spec  <-  function(otu, meta, factor, file=NULL, ext=NULL,
 
 group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
                        width=8, height=8) {
-
-#library("reshape2") #melt()
-#  library("vegan") # specpool()
-#  library("reshape") # rename(). colsplit()
-
+  
+  #library("reshape2") #melt()
+  #  library("vegan") # specpool()
+  #  library("reshape") # rename(). colsplit()
+  
   save  <-  !is.null(file)
   # vegan
   V1 = se = NULL
   .valid.meta(otu1=otu, meta=meta)
-  .valid.factor(meta, factor)
+  .valid.factors(meta, factor)
   m <- meta
   m$rn <- rownames(m)
   m <- m[, c("rn", factor)]
@@ -584,47 +584,47 @@ group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
     warning(paste("The following samples contain missing data in ", factor, ": ", paste(not,collapse=", "), "; which are excluded in the analysis", sep=""))
   }
   meta <- m
-
+  
   ex <- vector()
   for ( i in levels(factor(meta[[factor]])) ) {
-   n <- rownames(meta)[which(meta[[factor]]==i)]
-   if ( length(n) == 1 ) {
-     warning(paste("Only 1 sample, ", n, ", is from ", i, "; some diversity indices cannot be calculated, this sample is removed from the analysis", sep=""))
-     ex <- c(ex, n)
+    n <- rownames(meta)[which(meta[[factor]]==i)]
+    if ( length(n) == 1 ) {
+      warning(paste("Only 1 sample, ", n, ", is from ", i, "; some diversity indices cannot be calculated, this sample is removed from the analysis", sep=""))
+      ex <- c(ex, n)
     }
   }
   if ( length(ex) == 0 ) {
     meta <- meta
   } else {
     rm <- paste(ex, collapse="|")
-    meta <- meta[!grepl(rm, rownames(meta)), ]
+    meta <- meta[!grepl(rm, rownames(meta)), ,drop=FALSE]
   }
   meta[[factor]] <- factor(meta[[factor]])
-  otu <- otu[, match(c(rownames(meta),"taxonomy"), colnames(otu))]
-  pool <- specpool(transpose.OTU(otu), meta[[factor]])
+  otu <- otu[, match(c(rownames(meta),"taxonomy"), colnames(otu)), drop=FALSE]
+  pool <- vegan::specpool(transpose.OTU(otu), meta[[factor]])
   pool <- pool[, -dim(pool)[2]]
-
+  
   #if (!require("reshape2")) {
   #  stop("package 'reshape2' is required to use this function: try 'install.packages('reshape2')'.")
   #}
-
+  
   #if (!require("reshape")) {
   #  stop("package 'reshape' is required to use this function: try 'install.packages('reshape')'.")
   #}
-
-  pool.melt <- melt(cbind(pool,ind=rownames(pool)), is.vars=c('ind'))
+  
+  pool.melt <- reshape2::melt(cbind(pool,ind=rownames(pool)), is.vars=c('ind'))
   names(pool.melt)[names(pool.melt)=="ind"] <- factor
   names(pool.melt)[names(pool.melt)=="variable"] <- "Index"
   #pool.melt <- rename(pool.melt,c(ind=paste0(factor), variable="Index"))
   pool.melt.split <- cbind(pool.melt, 
-                     Index = reshape2::colsplit(pool.melt$Index, 
-                     "\\.",  c('type', 'se')))
+                           Index = reshape2::colsplit(pool.melt$Index, 
+                                                      "\\.",  c('type', 'se')))
   pool.melt.split.cast = reshape::cast(pool.melt.split, 
-                       paste0(factor, "+ Index.type ~ Index.se"))
-
+                                       paste0(factor, "+ Index.type ~ Index.se"))
+  
   # plot
   # bar posittion. bit overlap
-  dodge  <-  position_dodge(width = 0.8)
+  dodge  <- ggplot2::position_dodge(width = 0.8)
   
   x <- colnames(pool.melt.split.cast)[1]
   y <- colnames(pool.melt.split.cast)[3]
@@ -632,19 +632,19 @@ group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
   legend <- levels(pool.melt.split.cast$Index.type)
   xlab <- colnames(pool.melt.split.cast)[1]
   ylab <- "richness"
-
-  specpool.plot <- ggplot(pool.melt.split.cast, 
-                           aes_string(x=x, y=y, fill=fill)) + 
-                   geom_bar(stat="identity",position=dodge) +  
-                   geom_errorbar(aes(ymin=V1-se, ymax=V1+se), 
-                             position = dodge, size = 0.5, 
-                             shape = 1, width = 0.1) + 
-                   scale_fill_brewer(legend, type = "div" , 
-                             palette = "Set3" ) +  
-                   xlab(xlab) + ylab(ylab)
-#  return(list(pool, pool.melt, pool.melt.split.cast))
-
-   if (save) {
+  
+  specpool.plot <- ggplot2::ggplot(pool.melt.split.cast, 
+                          aes_string(x=x, y=y, fill=fill)) + 
+    geom_bar(stat="identity",position=dodge) +  
+    geom_errorbar(aes(ymin=V1-se, ymax=V1+se), 
+                  position = dodge, size = 0.5, 
+                  shape = 1, width = 0.1) + 
+    scale_fill_brewer(legend, type = "div" , 
+                      palette = "Set3" ) +  
+    xlab(xlab) + ylab(ylab)
+  #  return(list(pool, pool.melt, pool.melt.split.cast))
+  
+  if (save) {
     file <- .ensure.filepath(file, ext)
     .ggsave.helper(file, ext, width, height, plot=specpool.plot)
   } else {

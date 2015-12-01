@@ -11,7 +11,7 @@ taxa in each level of a given metadata variable
 \usage{
 group.Taxa.box(data, is.OTU=TRUE, rank="g", 
                taxa="", meta, meta.factor="",      
-               cex.y=5, cex.x=5, 
+               cex.y=5, cex.x=5, cex.main=10,
                RAM.theme=NULL, col.pal=NULL, main="", 
                file=NULL, ext=NULL, height=8, width=16)
 }
@@ -42,6 +42,9 @@ size of y axis tick labels.
 }
   \item{cex.x}{
 size of x axis tick labels.
+}
+  \item{cex.main}{
+size of title.
 }
   \item{RAM.theme}{
 customized ggplot_theme in RAM. 
