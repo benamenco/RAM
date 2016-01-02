@@ -2,19 +2,19 @@
 \alias{write.data}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Write Data To CSV File 
+Write Data To CSV File
 }
 \description{
 Creates a .csv-formatted file with the data. The file will be
-created in your current working directory (see ?getwd and ?setwd),
-unless specified otherwise by \code{file}. Note that if the 
-\code{file} field does not end in .csv, ".csv" will be appended 
-to the end of \code{file}.
+created in your current working directory (see ?getwd and 
+?setwd), unless specified otherwise by \code{file}. Note that 
+if the \code{file} field does not end in .csv, ".csv" will be 
+appended to the end of \code{file}
 }
 \usage{
 write.data(data, file)
 }
-%- maybe also 'usage' for other objects documented here.
+% maybe also 'usage' for other objects documented here
 \arguments{
   \item{data}{
 a data frame or matrix etc.
@@ -27,7 +27,6 @@ The name of the .csv file to be created.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 %\value{
-  
 %}
 %\references{
 %% ~put references to the literature/web site here ~
@@ -38,12 +37,10 @@ Wen Chen and Joshua Simpson.
 %\note{
 %%  ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 \seealso{
-\code{\link{write.csv}}, \code{\link{getwd}}, \code{\link{setwd}}
-%% ~~objects to See Also as \code{\link{help}}, ~~~
+\code{\link{write.csv}}, \code{\link{getwd}}, 
+\code{\link{setwd}}
+%% ~~ objects to See Also as \code{\link{help}} ~~
 }
 \examples{
 data(ITS1)

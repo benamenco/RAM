@@ -322,7 +322,7 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
  if ( len <= 12 ) {
     p <- p + scale_color_brewer(palette="Set1")
  } else {
-    col.func  <-  colorRampPalette(brewer.pal(9, "Set1"))
+    col.func  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
     p <- p + scale_color_manual(values=col.func(len))
  }
     
@@ -764,7 +764,7 @@ Taxa.ord <- function(data, is.OTU=TRUE, meta=meta, factors=NULL,
  if ( len <= 12 ) {
     p <- p + scale_color_brewer(palette="Set1")
  } else {
-    col.func  <-  colorRampPalette(brewer.pal(9, "Set1"))
+    col.func  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
     p <- p + scale_color_manual(values=col.func(len))
  }
     
@@ -1112,7 +1112,7 @@ pcoa.plot <- function(data, is.OTU=TRUE, meta, factors, rank, stand.method=NULL,
   if ( len <= 12 ) {
     p <- p + scale_color_brewer(palette="Set1")
   } else {
-    col.func  <-  colorRampPalette(brewer.pal(9, "Set1"))
+    col.func  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(9, "Set1"))
     p <- p + scale_color_manual(values=col.func(len))
   }
     
@@ -1168,7 +1168,7 @@ pcoa.plot <- function(data, is.OTU=TRUE, meta, factors, rank, stand.method=NULL,
   
   # set up colours for meta factors 
   meta.cols <- vector(length=num.facs, mode="list")
-  palettes <- list(brewer.pal(9, "Pastel1"), brewer.pal(9, "Set1"))
+  palettes <- list(RColorBrewer::brewer.pal(9, "Pastel1"), RColorBrewer::brewer.pal(9, "Set1"))
   
   for (i in 1:num.facs) {
     

@@ -2,7 +2,7 @@
 \alias{group.Taxa.box}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Boxplot Of Distribution Of Taxa In Each Level of A Metadata Variable
+Boxplot Of Taxa In Each Level of A Metadata Variable
 }
 \description{
 This function do a boxplot to show the distribution of selected
@@ -22,17 +22,19 @@ a list of otu tables or taxonomic abundance matrices.
 See also \code{\link{RAM.input.formatting}}.
 }
   \item{is.OTU}{
-logical. If an OTU table was provided, \code{is.OTU} should be set 
-as \code{TRUE}; otherwise, it should be set as \code{FALSE}.
+logical. If an OTU table was provided, \code{is.OTU} should be 
+set as \code{TRUE}; otherwise, it should be set as \code{FALSE}.
 }
   \item{rank}{
-a single taxonomic rank. See also \code{\link{RAM.rank.formatting}}
+a single taxonomic rank. 
+See also \code{\link{RAM.rank.formatting}}
 }
   \item{taxa}{
 a vector containing taxa names for plotting.
 }
   \item{meta}{
-the metadata table to be used (must have same samples as \code{data}.
+the metadata table to be used 
+(must have same samples as \code{data}.
 }
   \item{meta.factor}{
 a character string. Must be one of the metadata variables.
@@ -54,7 +56,8 @@ See also ?theme_ggplot.
 color palettes to be used. 
 }
   \item{main}{
-a character string. The title of the plot, default is an empty string.
+a character string. The title of the plot, default is an empty 
+string.
 }
   \item{file}{
 filename to save the plot.
@@ -76,7 +79,6 @@ an integer, height of the plot.
 This function returns a boxplot of the distribution of seleted 
 taxa within each level of a given metadata variable.
 }
-
 %\references{
 %% ~put references to the literature/web site here ~
 %}
@@ -86,22 +88,22 @@ Wen Chen.
 %\note{
 %%  ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 %\seealso{
 %% notes
 %}
 \examples{
 data(ITS1, ITS2, meta)
 taxa <- c("Fusarium", "Alternaria", "Cladosporium")
-group.Taxa.box(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, rank="g", 
-           taxa=taxa, meta=meta, meta.factor="City")
+group.Taxa.box(data=list(ITS1=ITS1, ITS2=ITS2), 
+               is.OTU=TRUE, rank="g", 
+               taxa=taxa, meta=meta, meta.factor="City")
 \dontrun{
-taxa.1 <- c("Fusarium", "Alternaria", "Cladosporium", "Verticillium",
-           "Kondoa")
-group.Taxa.box(data=list(ITS1=ITS1, ITS2=ITS2), is.OTU=TRUE, rank="g", 
-           taxa=taxa.1, meta=meta, meta.factor="City")
+taxa.1 <- c("Fusarium", "Alternaria", "Cladosporium", 
+            "Verticillium", "Kondoa")
+group.Taxa.box(data=list(ITS1=ITS1, ITS2=ITS2), 
+               is.OTU=TRUE, rank="g", 
+               taxa=taxa.1, meta=meta, meta.factor="City")
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

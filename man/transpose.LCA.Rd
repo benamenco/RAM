@@ -5,7 +5,7 @@
 Transpose OTU Tables With LCA Annotation For Each OTU
 }
 \description{
-Similar to \code{\link[RAM]{transpose.OTU}}, but each OTU is 
+Similar to \code{\link[RAM]{transpose.OTU}}, but each OTU is
 annotated by the lowest common ancestor it was assigned to.
 }
 \usage{
@@ -22,8 +22,8 @@ See also \code{\link{RAM.input.formatting}}.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-Returns a transposed OTU table, but the colname is formatted as:
-LCA_otuID.
+Returns a transposed OTU table, but the colname is formatted 
+as: LCA_otuID.
 }
 %\references{
 %% ~put references to the literature/web site here ~
@@ -34,9 +34,6 @@ Wen Chen.
 %\note{
 %%  ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}

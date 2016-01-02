@@ -2,15 +2,15 @@
 \alias{filter.Taxa}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Filter Taxonomic Abundance Matrix by Total Counts Or 
+Filter Taxonomic Abundance Matrix by Total Counts Or
 Maximum Relative Abundance
 }
 \description{
-This function filter taxa group by counts or relative abundance. 
-If filter by counts, taxa having total counts more than a threshhold 
-will be kept. If filter by relative abundance, taxa with the maximum 
-relative abundance greater than a threshhold in at least one subject 
-will be kept. 
+This function filter taxa group by counts or relative abundance.
+If filter by counts, taxa having total counts more than a 
+threshhold will be kept. If filter by relative abundance, taxa
+with the maximum relative abundance greater than a threshhold 
+in at least one subject will be kept.
 }
 \usage{
 filter.Taxa(taxa, drop.unclassified=TRUE,
@@ -27,19 +27,19 @@ logical, whether or not remove unclassified groups.
 See also \code{\link{tax.abund}}
 }
   \item{percent}{
-a floating point greater than 0 and less or equals to 1. 
-Filter Taxa table by relative abundance.   
+a floating point greater than 0 and less or equals to 1.
+Filter Taxa table by relative abundance.
 }
   \item{number}{
-an integer. FilterTaxa table by total sequence counts.  
+an integer. FilterTaxa table by total sequence counts.
 }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-The value returned by this function is a data frame with taxa met 
-the filter requirement only.
+The value returned by this function is a data frame with taxa 
+met the filter requirement only.
 }
 %\references{
 %% ~put references to the literature/web site here ~
@@ -50,9 +50,7 @@ Wen Chen
 % \note{
 %% ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 %\seealso{
 % ~~further links~~
 %}

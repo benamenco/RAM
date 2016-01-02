@@ -5,7 +5,8 @@
 Open Metadata Table
 }
 \description{
-Opens the given file and return a data frame representing the metadata. This function use \code{\link{read.table}} to read in 
+Opens the given file and return a data frame representing the 
+metadata. This function use \code{\link{read.table}} to read in
 data; for large data sets, we recommend \code{\link{read.meta}}.
 }
 \usage{
@@ -17,15 +18,16 @@ read.meta(file, sep=",")
 a character vector specifying the file path to your file.
 }
   \item{sep}{
-the character used to separate cells in the file.  
+the character used to separate cells in the file.
 }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-Returns a data frame with the information from the file. The first 
-row and column are used for the names of the other rows and columns.
+Returns a data frame with the information from the file. The 
+first row and column are used for the names of the other rows 
+and columns.
 }
 %\references{
 %% ~put references to the literature/web site here ~
@@ -33,9 +35,7 @@ row and column are used for the names of the other rows and columns.
 \author{
 Wen Chen and Joshua Simpson
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{read.meta}}, \code{\link{read.table}}
 }

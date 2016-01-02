@@ -5,13 +5,14 @@
 Boxplot Of Richness For Each Level Of A Given Metadata Variable
 }
 \description{
-This function first use \code{\link{specpool}} to estimate the 
-extrapolated species richness in a species pool (levels of metadata 
-variable), and the number of unobserved species, then do a boxplot
-for percent of observed richness. 
+This function first use \code{\link{specpool}} to estimate the
+extrapolated species richness in a species pool (levels of 
+metadata variable), and the number of unobserved species, then 
+do a boxplot for percent of observed richness.
 }
 \usage{
-group.spec(otu, meta, factor, file=NULL, ext=NULL, width=8,height=8)
+group.spec(otu, meta, factor, file=NULL, ext=NULL, 
+           width=8,height=8)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -19,31 +20,30 @@ group.spec(otu, meta, factor, file=NULL, ext=NULL, width=8,height=8)
 an OTU table.
 }
   \item{meta}{
-the metadata table to be used (must have same samples as 
+the metadata table to be used (must have same samples as
 \code{data}.
 }
-
   \item{factor}{
 a character string. Must be one of the metadata variables.
 }
   \item{file}{
-optional. Filename that the plot to be saved to.  
+optional. Filename that the plot to be saved to.
 }
   \item{ext}{
-optional. Filename extension, type of image to be saved.  
+optional. Filename extension, type of image to be saved.
 }
   \item{width}{
-an integer. Filter OTU table by counts.  
+an integer. Filter OTU table by counts.
 }
   \item{height}{
-an integer. Filter OTU table by counts.  
+an integer. Filter OTU table by counts.
 }
 }
 %\details{
 %%  Maybe explain full/restricted models
 %}
 \value{
-This function returns a boxplot of species richness for a given 
+This function returns a boxplot of species richness for a given
 metadata variable.
 }
 %\references{
@@ -55,15 +55,12 @@ Wen Chen.
 %\note{
 %%  ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 \seealso{
 \code{\link{specpool}}, \code{\link{specpool}}
 }
 \examples{
 data(ITS1, meta)
-
 group.spec(ITS1, meta, "Crop")
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

@@ -76,7 +76,7 @@ data.subset <- function(data, meta, factors="", values="", and=TRUE){
     valid.OTU(otu)
   
     # meta factor and value for selection
-    factors <- .check.factors(meta=meta, factors=factors)
+    factors <- .valid.factor(meta=meta, meta.factor=factors)
     factors1 <- parse(text = paste("meta$",factors,sep=""))
     values1 <- paste(values, collapse="|")
 

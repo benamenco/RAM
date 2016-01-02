@@ -5,7 +5,7 @@
 Reset  OTU
 }
 \description{
-This function reset data type of metadata variables. 
+This function reset data type of metadata variables.
 }
 \usage{
 reset.META(meta, factor=NULL, numeric=NULL, date=NULL)
@@ -16,15 +16,15 @@ reset.META(meta, factor=NULL, numeric=NULL, date=NULL)
 data frame. The metadata table to reset variable data type.
 }
   \item{factor}{
-a string or charactor vector, containing the column names of 
+a string or charactor vector, containing the column names of
 metadata variables to be set as factor.
 }reset.META
   \item{numeric}{
-a string or charactor vector, containing the column names of 
-metadata variables to be set as numeric. 
+a string or charactor vector, containing the column names of
+metadata variables to be set as numeric.
 }
   \item{date}{
-a string or charactor vector containing the column names of 
+a string or charactor vector containing the column names of
 metadata variables to be set as date.
 }
 }
@@ -32,11 +32,10 @@ metadata variables to be set as date.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-This function returns the same metadata with variables being reset 
-to desired data type. Warnings or errors may be raise if the format 
-of the original data cannot be recognized by R.  
+This function returns the same metadata with variables being 
+reset to desired data type. Warnings or errors may be raise if 
+the format of the original data cannot be recognized by R.
 }
-
 %\references{
 %% ~put references to the literature/web site here ~
 %}
@@ -46,9 +45,7 @@ Wen Chen
 % \note{
 %% ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 %\seealso{
 % ~~further links~~
 %}
@@ -57,7 +54,7 @@ data(meta)
 str(meta)
 \dontrun{
 # for demonstration purpose only
-meta.new <- reset.META(meta, factor=c("Plots"), 
+meta.new <- reset.META(meta, factor=c("Plots"),
                    numeric=c("City", "Province"))
 str(meta.new)
 }

@@ -5,7 +5,7 @@
 Creat Color Palette
 }
 \description{
-This function creates color palette, especially if the number of 
+This function creates color palette, especially if the number of
 colors required is more than 12.
 }
 \usage{
@@ -33,9 +33,7 @@ an integer.
 \author{
 Wen Chen
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}

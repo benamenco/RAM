@@ -5,7 +5,7 @@
 Validate an OTU Table
 }
 \description{
-This function consumes one or two OTU tables and checks if they 
+This function consumes one or two OTU tables and checks if they
 are formatted properly and contain valid data.
 }
 \usage{
@@ -24,29 +24,26 @@ the second OTU table to check.
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-If the table is not valid, an error will be raised with a 
-description explaining the problem. If the table is valid, NULL 
+If the table is not valid, an error will be raised with a
+description explaining the problem. If the table is valid, NULL
 will be returned invisibly.
 }
 %\references{
 %% ~put references to the literature/web site here ~
 %}
 \author{
-Dr. Chen Wen and Joshua Simpson.
+Wen Chen and Joshua Simpson.
 }
 %\note{
 %%  ~~further notes~~
 %}
-
 %% ~Make other sections like Warning with \section{Warning }
 %% {....} ~
-
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
 data(ITS1, ITS2)
-
 valid.OTU(ITS1)
 valid.OTU(ITS1, ITS2)
 }

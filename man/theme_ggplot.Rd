@@ -6,9 +6,9 @@
 Customized Themes For GGPLOT
 }
 \description{
-RAM provides some customized ggplot themes to spice up your plots
-for presentations, but some of these addtional features might be 
-distractive and not be ideal for publications 
+RAM provides some customized ggplot themes to spice up your 
+plots for presentations, but some of these addtional features 
+might be distractive and not be ideal for publications
 }
 %\usage{
 %
@@ -38,9 +38,8 @@ data <- list(ITS1=ITS1, ITS2=ITS2)
 # dissim.alleig.plot returns a ggplot2 object:
 my.eig.plot <- dissim.alleig.plot(data)
 my.eig.plot # view the plot
-
 # update ggplot theme
-require("grid") 
+require("grid")
 new_theme <-RAM.color()
 my.eig.plot <- my.eig.plot + new_theme
 my.eig.plot

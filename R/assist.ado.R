@@ -10,18 +10,18 @@ assist.ado <- function(data, meta, is.OTU=TRUE, ranks=NULL,
   
   # rework with the data based on OTU or tax.abund matrix
   data.new <- data.revamp(data=data, is.OTU=is.OTU, ranks=ranks, 
-                        stand.method=data.trans, top=top, mode=mode)
+                          stand.method=data.trans, top=top, mode=mode)
   
-
+  
   # filter METAdata, exclude variable with only 1 level, with
   # missing data, and non numeric&&factor/charactor (NNF)
   suppressWarnings(meta.new <- filter.META(meta, 
-                                  exclude=meta.strata))
-
+                                           exclude=meta.strata))
+  
   if ( is.null(meta.strata) ) {
-     strata <- NULL
+    strata <- NULL
   } else {
-     strata <- meta.new[[meta.strata]]
+    strata <- meta.new[[meta.strata]]
   }
   
   
@@ -33,16 +33,16 @@ assist.ado <- function(data, meta, is.OTU=TRUE, ranks=NULL,
     dt <- data.new[[i]]
     if ( is.null(dt) ) { break }
     label <- names(data.new)[i]
-
+    
     if ( is.null(dist) ) {
-      ado <- adonis(dt ~ ., data=meta.new, 
-                               permutations=perm, 
-                               strata= strata)
+      ado <- vegan::adonis(dt ~ ., data=meta.new, 
+                           permutations=perm, 
+                           strata= strata)
     } else {
-      ado <- adonis(dt ~ ., data=meta.new, 
-                               method=dist, 
-                               permutations=perm, 
-                               strata=strata) 
+      ado <- vegan::adonis(dt ~ ., data=meta.new, 
+                           method=dist, 
+                           permutations=perm, 
+                           strata=strata) 
     }
     #names(data.ado)[i] <- names(data.new)[i]
     ado.list[[label]] <- ado

@@ -269,22 +269,24 @@ valid.OTU <- function(otu1, otu2=NULL) {
   }
 }
 
-.check.factors <- function(meta, factors) {
+
+.valid.factor <- function(meta, meta.factor){
+  if ( !any(meta.factor %in% names(meta)) ) {
+     stop("none of the variables are in the metadata")
+  } else {
     vec <- vector()
-    for ( i in factors ) {
-        if ( is.null(i) || i=="" ) {
-            next
-        } else if ( !(i %in% names(meta)) ) {
-            vec <- c(vec, i)
-        } else {
-            next
-        }
+    for ( i in meta.factor) {
+      if ( !i %in% names(meta) ) {
+        vec <- c(vec, i)
+      }
     }
-    if ( length(vec) !=0 ) {
-       warning(paste("The following variables are not in the metadata: ", "\n", paste(vec, collapse=", "), sep =""))
-     factors.new <- factors[-which(factors %in% vec)]
-   } else {
-      factors.new <- factors
-   }
- return(factors.new)  
-}
+  }
+  vec <- unique(vec)
+  if ( length(vec) !=0  ) {
+    warning(paste("the following variables are not in the metadata: ", paste(vec, collapse=", "), sep=""))
+    factors <- meta.factor[-which(meta.factor %in% vec)]
+  } else {
+    factors <- meta.factor
+  }
+  return(factors)
+}     

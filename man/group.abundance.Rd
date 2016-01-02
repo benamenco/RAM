@@ -2,17 +2,19 @@
 \alias{group.abundance}
 %- Also NEED an '\alias' for EACH other topic documented here.
 \title{
-Plot the Abundance of OTUs by Classification at a Given Taxonomic Rank
+Plot the Abundance of OTUs by Classification at a Given 
+Taxonomic Rank
 }
 \description{
-This function consumes an OTU, and a rank, as well as various optional
-parameters. It creates a stacked bar plot showing the abundance of all
-classifications at the given taxonomic rank for each sample.
+This function consumes an OTU, and a rank, as well as various 
+optional parameters. It creates a stacked bar plot showing the 
+abundance of all classifications at the given taxonomic rank 
+for each sample.
 }
 \usage{
-group.abundance(data, rank, 
+group.abundance(data, rank,
                 top=NULL, count=FALSE, drop.unclassified=FALSE,
-                cex.x=NULL, main=NULL, file=NULL, ext=NULL, 
+                cex.x=NULL, main=NULL, file=NULL, ext=NULL,
                 height=8, width=16, bw=FALSE, ggplot2=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
@@ -21,16 +23,16 @@ group.abundance(data, rank,
 a list of OTU tables.
 }
   \item{rank}{
-the taxonomic rank to use. 
+the taxonomic rank to use.
 See \code{\link{RAM.rank.formatting}}.
 }
   \item{top}{
-the number of groups to select, starting with the most abundant. If \code{NULL},
-all are selected.
+the number of groups to select, starting with the most abundant.
+If \code{NULL}, all are selected.
 }
   \item{count}{
-logical. If \code{TRUE}, the numerical counts for each OTU will be shown;
-otherwise the relative abundance will be shown.
+logical. If \code{TRUE}, the numerical counts for each OTU will 
+be shown; otherwise the relative abundance will be shown.
 }
   \item{drop.unclassified}{
 logical. Should unclassified samples be excluded from the data?
@@ -42,11 +44,12 @@ optional. The size of x axis names.
 the title of the plot
 }
   \item{file}{
-the file path where the image should be created (see ?RAM.plotting).
+the file path where the image should be created 
+(see ?RAM.plotting).
 }
   \item{ext}{
-the file type to be used; one of \code{"pdf"}, \code{"png"}, \code{"tiff"}, 
-\code{"bmp"}, \code{"jpg"}, or \code{"svg"}.
+the file type to be used; one of \code{"pdf"}, \code{"png"}, 
+\code{"tiff"}, \code{"bmp"}, \code{"jpg"}, or \code{"svg"}.
 }
   \item{height}{
 the height of the image to be created (in inches).
@@ -58,8 +61,9 @@ the width of the image to be created (in inches).
 logical. Should the image be created in black and white?
 }
   \item{ggplot2}{
-logical. Should the \code{ggplot2} package be used to produce the plot, or
-should the base graphics be used? (see ?RAM.plotting).
+logical. Should the \code{ggplot2} package be used to produce 
+the plot, or should the base graphics be used? 
+(see ?RAM.plotting).
 }
 }
 %\details{
@@ -78,25 +82,21 @@ should the base graphics be used? (see ?RAM.plotting).
 \author{
 Wen Chen and Joshua Simpson
 }
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
+%% ~Warning with \section{Warning }{....} ~
 %\seealso{
 %% ~~objects to See Also as \code{\link{help}}, ~~~
 %}
 \examples{
 data(ITS1, ITS2)
-
-# plot the relative abundance at the class level to the screen, ignoring the
-# unclassified
-group.abundance(data=list(ITS1=ITS1), rank="phylum", 
+# plot the relative abundance at the class level to the screen, 
+# ignoring the unclassified
+group.abundance(data=list(ITS1=ITS1), rank="phylum",
                 drop.unclassified=TRUE)
-
 \dontrun{
 # plot the count abundance at the phylum level to path.tiff
-group.abundance(data=list(ITS1=ITS1, ITS2=ITS2), rank="g", 
+group.abundance(data=list(ITS1=ITS1, ITS2=ITS2), rank="g",
                 top=10, count=FALSE, drop.unclassified=TRUE,
-                main="", file=NULL, ext=NULL,  
+                main="", file=NULL, ext=NULL,
                 height=8, width=16, bw=FALSE, ggplot=TRUE)
 }
 }

@@ -232,7 +232,7 @@ group.Taxa.box <- function(data, is.OTU=TRUE, rank="g",
             ggtitle(title) 
 
   if ( is.null(RAM.theme) ) {     
-     p <- p + theme(legend.key.size=grid::unit(6,"mm"), 
+     p <- p + theme(legend.key.size=unit(6,"mm"), 
               legend.text = element_text(size=10),
               axis.text.y=element_text(size=cex.y, face="bold"),
               axis.text.x=element_text(size=cex.x, face="bold"),
@@ -274,7 +274,7 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
   }
 
   # get the groups
-  .valid.factors(meta, meta.factor)
+  .valid.factor(meta, meta.factor)
   if(!length(meta.factor)==1) {
      stop ("Error: please provide one factor")
   }
@@ -478,7 +478,7 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
            
 
   if ( is.null(RAM.theme) ) {
-    p <- p + theme(legend.key.size=grid::unit(6,"mm"), 
+    p <- p + theme(legend.key.size=unit(6,"mm"), 
                    axis.text.y=element_text(size=cex.y, face="bold"),
                    axis.text.x=element_text(size=cex.x, face="bold"),
                    #axis.ticks.length=grid::unit(-0.25, "cm"), 
@@ -546,16 +546,17 @@ group.abund.Taxa <- function(data, is.OTU=TRUE, rank="g", taxa,
     if ( is.OTU ) {
       valid.OTU(elem)
       # get the groups
-      tax<-.group.rank2(data=elem, meta=meta, 
-                        meta.factor=meta.factor,
+      tax <-.group.rank2(data=elem, meta=meta, meta.factor=meta.factor,
                         relative.abund=TRUE, taxa=taxa,  
                         drop.unclassified=drop.unclassified, 
                         rank=rank)  
     } else {
-      elem.p <- vegan::decostand(elem, "total")
-      tax <- elem.p[, names(elem.p) %in% taxa]
+      tax <- .group.rank2(data=elem, is.OTU=FALSE, meta=meta, meta.factor=meta.factor,
+                          relative.abund=TRUE, taxa=taxa,  
+                          drop.unclassified=drop.unclassified, 
+                          rank=rank) 
     }
-    
+    #print(tax)
     # reshape2::melt by Sample
     #if (!require("reshape2")) {
     #   stop("package 'reshape2' is required to use this function")
@@ -601,11 +602,11 @@ group.abund.Taxa <- function(data, is.OTU=TRUE, rank="g", taxa,
   # http://goo.gl/JxgZ9u
   if ( is.null(bar.width) ) {
     p <- ggplot2::ggplot(all.taxa, aes_string(x="Sample", y="RA", 
-                                     fill=rank_name)) + 
+                                              fill=rank_name)) + 
       geom_bar(position="stack", stat="identity") 
   } else {
     p <- ggplot2::ggplot(all.taxa, aes_string(x="Sample", y="RA", 
-                                     fill=rank_name)) + 
+                                              fill=rank_name)) + 
       geom_bar(position="stack", stat="identity", width=bar.width)
   }
   
@@ -638,7 +639,6 @@ group.abund.Taxa <- function(data, is.OTU=TRUE, rank="g", taxa,
   }
   
 }
-
 
 shared.Taxa <- function(data, is.OTU=TRUE, rank="g") {
   .valid.data(data=data, is.OTU=is.OTU)
@@ -758,23 +758,23 @@ shared.Taxa <- function(data, is.OTU=TRUE, rank="g") {
         
 
 .group.rank2<-function(data, is.OTU=TRUE, meta=meta, meta.factor="",
-                      drop.unclassified=FALSE, relative.abund=FALSE, 
-                      rank="g", func="sum", taxa=NULL){
+                       drop.unclassified=FALSE, relative.abund=FALSE, 
+                       rank="g", func="sum", taxa=NULL){
   ## whether data an OTU or taxonomic abundance matrix
   if ( is.OTU ) {
-      valid.OTU(data)
-      tax <- tax.abund(data, rank=rank, drop.unclassified=FALSE, 
-                       count=TRUE)
+    valid.OTU(data)
+    tax <- tax.abund(data, rank=rank, drop.unclassified=drop.unclassified, 
+                     count=TRUE)
   } else {
-      tax <- data
+    tax <- data
   }
-
+  
   # get the groups
   if( !length(meta.factor)==1 || 
-      !any(names(meta) %in% meta.factor) ) {
+        !any(names(meta) %in% meta.factor) ) {
     stop ("Error: please provide one factor")
   } 
-
+  
   if(all(rownames(tax)==rownames(meta))) {
     tax.factor <- stats::aggregate(tax, by=list(meta[[meta.factor]]), FUN=func)
     rownames(tax.factor) <- tax.factor[,"Group.1"]
@@ -790,43 +790,42 @@ shared.Taxa <- function(data, is.OTU=TRUE, rank="g") {
   }
   
   if (drop.unclassified) {
-      # this selects all columns NOT containing in the blacklist
-      # drop.unclassified using blacklist
+    # this selects all columns NOT containing in the blacklist
+    # drop.unclassified using blacklist
     remove.pat <- gsub(.get.rank.pat(rank), "", 
-                   paste0(.blacklist(.get.rank.pat(rank)), 
-                   "|no_taxonomy"))
+                       paste0(.blacklist(.get.rank.pat(rank)), 
+                              "|no_taxonomy"))
     tax.factor <- tax.factor[ , !grepl(remove.pat, names(tax.factor), 
-                            ignore.case=TRUE), drop=FALSE]
-    } else {
-      tax.factor<-tax.factor
+                                       ignore.case=TRUE), drop=FALSE]
+  } else {
+    tax.factor<-tax.factor
   }
   # keep only the 'top' most abundant groups, where top is user-given 
   if ( is.null(taxa) ) {
-      tax.factor.sel<-tax.factor
+    tax.factor.sel<-tax.factor
   } else if ( is.numeric(taxa) ) {
-      if ( taxa <= ncol(tax.factor) ) {
-          tax.factor.sel<-tax.factor[,1:taxa]
-      } else {
-          tax.factor.sel<-tax.factor
-      }
-  } else if ( is.character(taxa) && length(taxa) >= 1 ) {
-      if( !any(names(tax.factor) %in% taxa) ) {
-          stop ("Error: no taxa present in the dataset")
-      } else {
-         tax.factor.sel <- tax.factor[, which(names(tax.factor) %in% taxa), drop=FALSE]
-         nocap <- setdiff(taxa, names(tax.factor.sel))
-         if ( length(nocap) != 0 ) {
-             warning(paste("Taxa not in the dataset: ", paste(nocap, collapse=" ,"), sep=""))
-             # if a taxon not being found in dataset, add 0 
-             for (i in nocap) {
-                 tax.factor.sel[[i]] <- 0
-             } 
-          } 
-       }
+    if ( taxa <= ncol(tax.factor) ) {
+      tax.factor.sel<-tax.factor[,1:taxa]
     } else {
-       tax.factor.sel<-tax.factor
+      tax.factor.sel<-tax.factor
     }
-
-    return(tax.factor.sel)    
+  } else if ( is.character(taxa) && length(taxa) >= 1 ) {
+    if( !any(names(tax.factor) %in% taxa) ) {
+      stop ("Error: no taxa present in the dataset")
+    } else {
+      tax.factor.sel <- tax.factor[, which(names(tax.factor) %in% taxa), drop=FALSE]
+      nocap <- setdiff(taxa, names(tax.factor.sel))
+      if ( length(nocap) != 0 ) {
+        warning(paste("Taxa not in the dataset: ", paste(nocap, collapse=" ,"), sep=""))
+        # if a taxon not being found in dataset, add 0 
+        for (i in nocap) {
+          tax.factor.sel[[i]] <- 0
+        } 
+      } 
+    }
+  } else {
+    tax.factor.sel<-tax.factor
+  }
+  
+  return(tax.factor.sel)    
 }
-

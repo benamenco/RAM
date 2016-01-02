@@ -131,9 +131,9 @@
     colours  <-  rep("white", times=cols.needed)
   } else {
     if (cols.needed > 12) {
-      colours  <-  colorRampPalette(brewer.pal(12, "Set3"))(cols.needed)
+      colours  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))(cols.needed)
     } else {
-      colours  <-  brewer.pal(12, "Set3")
+      colours  <-  RColorBrewer::brewer.pal(12, "Set3")
     }
   }
   
@@ -378,7 +378,7 @@ group.abundance  <-  function(data, rank,
       cols <- grey.colors(n=num.taxa, end=0.7)
     } else {
       # generate palette of colours, warn the user if too many OTUs
-      cols <- suppressWarnings(brewer.pal(num.taxa, "Set3"))
+      cols <- suppressWarnings(RColorBrewer::brewer.pal(num.taxa, "Set3"))
       
       if (num.taxa > 12) {
         warning("this colour palette only has 12 distinct colours, and more than 12 taxon groups have been provided. Some colours are being recycled in your graph (be careful!)")
@@ -533,7 +533,7 @@ group.abundance  <-  function(data, rank,
       # palette max is 12; so if we have more than 6 entries for otu1/2, we 
       # need to manually construct a palette to use
       
-      col.func  <-  colorRampPalette(brewer.pal(12, "Set3"))
+      col.func  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))
       p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
                                  guide=guide_legend(direction="horizontal", ncol=5))
     } else {
@@ -630,7 +630,7 @@ factor.abundance <- function(data, rank, top=NULL, count=FALSE,
       # palette max is 12; so if we have more than 6 entries for otu1/2, we 
       # need to manually construct a palette to use
       
-      col.func <- colorRampPalette(brewer.pal(12, "Set3"))
+      col.func <- grDevices::colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))
       p <- p + scale_fill_manual(values=col.func(cols.needed), 
                                  guide=guide_legend(direction="horizontal", ncol=5))
     } else {
@@ -869,7 +869,7 @@ group.spatial <- function(data, meta, date.col, province.col, rank, group,
 
 group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
                             thresholds = c(A=0.85, B=0.8, stat=0.8, p.value=0.05),
-                            all.indicators=TRUE, cex.x=NULL, file=NULL, ext=NULL,
+                            cex.x=NULL, file=NULL, ext=NULL,
                             height=12, width=12) {
   
   # I have seen this discussion: http://yihui.name/en/2014/07/library-vs-require/
@@ -882,10 +882,7 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
   }
   
   .valid.data(data, is.OTU=is.OTU)
-  # we create some temporary text files in this function, so clean up:
-  # (this removes all files containing mp_summary in their name in the R temp dir)
-  on.exit(unlink(paste0(tempdir(), "/mp_summary*")))
-  
+
   save  <-  !is.null(file)
   meta.factor  <-  .valid.factors(meta, factor, min.factors = 1, max.factors = 1)
   meta.name  <-  names(meta.factor)
@@ -894,11 +891,13 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
   num.otus <- length(data)
   # to store the data we're about to generate
   rows <- list()
+  sel <- list()
+  indicators.df.kept <- list()
 
-  for ( i in 1:length(data) ) {
-    elem <- data[[i]]
+  for ( ot in 1:length(data) ) {
+    elem <- data[[ot]]
     if ( is.null(elem) ) { break }
-    label <- names(data)[i]
+    label <- names(data)[ot]
 
     if ( is.OTU ) {
       otu <- elem
@@ -932,17 +931,12 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
     abund.stand  <-  decostand(abund, method="total")
     
     mp  <-  indicspecies::multipatt(abund.stand, meta.factor[[1]], control=how(nperm=999))
-     
-    # write the summary of the multi-level analysis to a temp file, which we read
-    tempfilename  <-  tempfile("mp_summary", fileext=".txt")
-    sink(file=tempfilename)
-    summary(mp, indvalcomp=TRUE)
-    sink()
     
-    indicators  <-  readLines(tempfilename)
-    
+    #return(mp)
+    indicators <- capture.output(indicspecies::summary.multipatt(mp, indvalcomp=TRUE))
+
     # the summary contains some human-friendly non-data lines we need to strip
-    # this regex keeps only lines that have {number number number number},
+    # this regex kepts only lines that have {number number number number},
     # since there are four numerical columns in the data (and none elsewhere)
     # this selects only the numerical data we want
     matches  <-  grepl("([[:digit:]\\.]+[[:space:]]+){4}", indicators)
@@ -970,44 +964,42 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
       indicators.df[ , i]  <-  as.numeric(indicators.df[ , i])
     }
    
-    # get names of all taxon groups above the given thresholds
-    keep  <-  indicators.df[with(indicators.df, 
-                               A >= thresholds[1] & B >= thresholds[2] & 
-                               stat >= thresholds[3] & p.value <= thresholds[4])
-                          , "Group", drop=TRUE]
-    keep.all <- keep
-    if (length(keep) == 0L) {
-      stop("no taxon groups met all thresholds. Either relax your thresholds, or try again with each otu individually.")
-    } else if ( all.indicators ) {
-      keep <- keep
-      if ( length(keep) > 12 ) {
-        warning(paste(length(keep), " indicators, consider to set all.indicators as FALSE or set more stringent thresholds", sep=""))
-      }
-    } else {
-      if ( length(keep) <= 12 ) {
-         warning(paste(length(keep), " indicators, will plot all", sep=""))
-         keep <- keep
-       } else {
-         warning(paste(length(keep), " indicators, will plot first 12 of them", sep=""))
-         keep <- keep[1:12]
-       }
+    # get names of all taxon groups above the given thresholds    
+    df<-indicators.df
+    df$Select <- NA
+    for ( i in 1:nrow(df)) {
+      if ( df[i, "A"] >= thresholds[1] & df[i, "B"] >= thresholds[2] & df[i, "stat"] >= thresholds[3] & df[i, "p.value"] <= thresholds[4] ) {
+      df[i, "Select"] <- "Y"
+      } else {
+         df[i, "Select"] <- ""
      }
-    # return(keep)
+   }
+
+    indicators.df.kept[[label]]<-df
+    kept.all <- df$Group[df$Select=="Y"]
+
+    if (length(kept.all) == 0L) {
+      stop("no taxon groups met all thresholds. Either relax your thresholds, or try again with each otu individually.")
+    } else {
+      kept <- kept.all
+    }
+
     # set up our data frame with all the data ggplot needs
     abund.filtered  <-  data.frame(Sample=rownames(abund.stand),
                                  meta=meta.factor,
                                  Region=rep(label, times=dim(abund.stand)[1]), 
-                                 abund.stand[ , keep, drop=FALSE])
-    
+                                 abund.stand[ , kept, drop=FALSE])
+
     # melt it & store the result
     rows[[label]]  <-  reshape2::melt(abund.filtered, id.vars=c("Sample", meta.name, "Region"),
                                                     variable.name="Indicator",
                                                     value.name="Value")
+    sel[[label]] <- kept
     
   } # end otu for loop
   
   data  <-  do.call(rbind, rows)
-  
+
   # we use as.formula/paste to create the faceting formula (otherwise we would 
   # have to type Region ~ meta.name, and facet_grid won't evaluate meta.name)
   p  <-  ggplot(data, aes_string(x="Sample", y="Value", fill="Indicator")) +
@@ -1023,33 +1015,28 @@ group.indicators  <-  function(data, is.OTU=TRUE, meta, factor, rank,
                     vjust = 1, hjust=1), 
                legend.position="bottom")
   }
+ 
+  cols.needed  <-  length(kept)
 
-  cols.needed  <-  length(keep)
   # color palette
-  col.pal <- c(brewer.pal(12, "Set3"), brewer.pal(8, "Accent"), .ram.pal(20))
+  col.pal <- RAM.pal(cols.needed)
     
-  if (cols.needed > 12 && cols.needed <=40  ) {
-    # palette max is 12; so if we have more than 6 entries for otu1/2, we 
-    # need to manually construct a palette to use
-    col.func <- function(n){col.pal[1:n]}
-    p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
-                                 guide=guide_legend(direction="horizontal", ncol=5))
-  } else if (cols.needed > 40  ) {
-    col.func  <-  colorRampPalette(col.pal)
-    p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
+  if ( cols.needed > 12 ) {
+    p  <-  p + scale_fill_manual(values=col.pal, 
                                  guide=guide_legend(direction="horizontal", ncol=5)) 
   } else {
     # otherwise, we can just use the Set3 palette from RColorBrewer
     p  <-  p + scale_fill_brewer(palette="Set3",
                                  guide=guide_legend(direction="horizontal", ncol=5))
   }
-    
+
   if (save) {
     .ggsave.helper(file, ext, width, height, plot=p)
   } else {
     print(p)
   }
-  return(keep.all)
+
+  return(list(indicators.df.kept, sel))
 }
 
 sample.locations <- function(otu1, otu2=NULL, meta, factor=NULL, zoom=5,
@@ -1337,7 +1324,7 @@ group.abundance.meta  <-  function(data, rank, top=NULL, count=FALSE,
       # palette max is 12; so if we have more than 6 entries for otu1/2, we 
       # need to manually construct a palette to use
       
-      col.func  <-  colorRampPalette(brewer.pal(12, "Set3"))
+      col.func  <-  grDevices::colorRampPalette(RColorBrewer::brewer.pal(12, "Set3"))
       p  <-  p + scale_fill_manual(values=col.func(cols.needed), 
                                  guide=guide_legend(direction="horizontal", ncol=5))
     } else {

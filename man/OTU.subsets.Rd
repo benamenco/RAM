@@ -5,52 +5,49 @@
 Subset OTU And Metadata
 }
 \description{
-This function subset OTUs and metadata based on user defined 
-values of metadata variables.   
+This function subset OTUs and metadata based on user defined
+values of metadata variables.
 }
 \usage{
-data.subset(data, meta, factors="", values="", and=TRUE)  
+data.subset(data, meta, factors="", values="", and=TRUE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{data}{
 a list of otu tables to be processed.
-See also \code{\link{RAM.input.formatting}}.  
+See also \code{\link{RAM.input.formatting}}.
 }
   \item{meta}{
-the metadata for subset.  
+the metadata for subset.
 }
   \item{factors}{
-a vector containing metadata variables.     
+a vector containing metadata variables.
 }
   \item{values}{
-a vector containing values of interest in metadata variables.    
+a vector containing values of interest in metadata variables.
 }
   \item{and}{
-logical. Determine whether all conditions needs to be met or not.    
+logical. Determine whether all conditions needs to be met or not.
 }
 }
 %\details{
 %%  ~~ If necessary, more details than the description above ~~
 %}
 \value{
-The value returned by this function is a list containing otu tables
-matching the filtering requirement. The last item in the output list
-is the associated new metadata table fit the requirement.  
+The value returned by this function is a list containing otu 
+tables matching the filtering requirement. The last item in the 
+output list is the associated new metadata table fit the 
+requirement.
 }
-
 %\references{
 %% ~put references to the literature/web site here ~
 %}
 \author{
-Wen Chen  
+Wen Chen
 }
 % \note{
 %% ~~further notes~~
 %}
-
-%% ~Make other sections like Warning with \section{Warning }{....} ~
-
 %\seealso{
 % ~~further links~~
 %}
@@ -59,13 +56,11 @@ data(ITS1, ITS2, meta)
 names(meta)
 factors <- c("City", "Harvestmethod")
 values <- c("City1", "Method1")
-
 # match all requirements, and=TRUE
-sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta, 
+sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta,
                    factors=factors, values=values, and=TRUE)
-
 # match either of the requirements, and=FALSE
-sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta, 
+sub <- data.subset(data=list(ITS1=ITS1, ITS2=ITS2), meta=meta,
                    factors=factors, values=values, and=FALSE)
 \dontrun{
 names(sub)

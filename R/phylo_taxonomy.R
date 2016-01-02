@@ -7,125 +7,133 @@
 }
 
 .as.phylo.formula_SL<-function (x, data = parent.frame(), ...){
-   # credit goes to Liam Revell, https://stat.ethz.ch/pipermail/r-sig-phylo/2013-August/003017.html 
-        if ( !requireNamespace('phytools') ) {
-          stop("function read.newic in package phytools is required for this function")
-        }
-     
-	err <- "use formula \"~column1/column2/.../columnN\"."
-	if (length(x) != 2) 
-		stop(err)
-	if (x[[1]] != "~") 
-		stop(err)
-	f <- x[[2]] # left of the formula
-	taxo <- list()
-	while (length(f) == 3) {
-		if (f[[1]] != "/") 
-			stop(err)
-		if (!is.factor(data[[deparse(f[[3]])]])) 
-			stop(paste("Variable", deparse(f[[3]]), "must be a factor."))
-		taxo[[deparse(f[[3]])]] <- data[[deparse(f[[3]])]]
-		if (length(f) > 1) 
-			f <- f[[2]]
-	}
-	if (!is.factor(data[[deparse(f)]])) 
-		stop(paste("Variable", deparse(f), "must be a factor."))
-	taxo[[deparse(f)]] <- data[[deparse(f)]]
-	taxo.data <- as.data.frame(taxo)
-	leaves.names <- as.character(taxo.data[, 1])
-	taxo.data[, 1] <- 1:nrow(taxo.data)
-	f.rec <- function(subtaxo) {
-		u <- ncol(subtaxo)
-		levels <- unique(subtaxo[, u])
-		if (u == 1) {
-			if (length(levels) != nrow(subtaxo)) 
-				warning("Error, leaves names are not unique.")
-			return(as.character(subtaxo[, 1]))
-		}
-		t <- character(length(levels))
-		for (l in 1:length(levels)) {
-			x <- f.rec(subtaxo[subtaxo[, u] == levels[l], ][1:(u - 1)])
-			t[l] <- paste("(", paste(x, collapse = ","), ")", sep = "")
-		}
-		return(t)
-	}
-	string <- paste("(", paste(f.rec(taxo.data), collapse = ","),");", sep = "")
-	phy <- phytools::read.newick(text = string) ## so that singles will be read without error
-	phy$edge.length <- rep(1,nrow(phy$edge))
-	phy <- collapse.singles(phy)
-	phy$tip.label <- leaves.names[as.numeric(phy$tip.label)]
-	return(phy)
+  # credit goes to Liam Revell, https://stat.ethz.ch/pipermail/r-sig-phylo/2013-August/003017.html 
+  if ( !requireNamespace('phytools') ) {
+    stop("function read.newick in package phytools is required for this function")
+  }
+
+  if ( !requireNamespace('ape') ) {
+    stop("functions in package ape is required for this function")
+  }
+  
+  err <- "use formula \"~column1/column2/.../columnN\"."
+  if (length(x) != 2) 
+    stop(err)
+  if (x[[1]] != "~") 
+    stop(err)
+  f <- x[[2]] # left of the formula
+  taxo <- list()
+  while (length(f) == 3) {
+    if (f[[1]] != "/") 
+      stop(err)
+    if (!is.factor(data[[deparse(f[[3]])]])) 
+      stop(paste("Variable", deparse(f[[3]]), "must be a factor."))
+    taxo[[deparse(f[[3]])]] <- data[[deparse(f[[3]])]]
+    if (length(f) > 1) 
+      f <- f[[2]]
+  }
+  if (!is.factor(data[[deparse(f)]])) 
+    stop(paste("Variable", deparse(f), "must be a factor."))
+  taxo[[deparse(f)]] <- data[[deparse(f)]]
+  taxo.data <- as.data.frame(taxo)
+  leaves.names <- as.character(taxo.data[, 1])
+  taxo.data[, 1] <- 1:nrow(taxo.data)
+  f.rec <- function(subtaxo) {
+    u <- ncol(subtaxo)
+    levels <- unique(subtaxo[, u])
+    if (u == 1) {
+      if (length(levels) != nrow(subtaxo)) 
+        warning("Error, leaves names are not unique.")
+      return(as.character(subtaxo[, 1]))
+    }
+    t <- character(length(levels))
+    for (l in 1:length(levels)) {
+      x <- f.rec(subtaxo[subtaxo[, u] == levels[l], ][1:(u - 1)])
+      t[l] <- paste("(", paste(x, collapse = ","), ")", sep = "")
+    }
+    return(t)
+  }
+  string <- paste("(", paste(f.rec(taxo.data), collapse = ","),");", sep = "")
+  phy <- phytools::read.newick(text = string) ## so that singles will be read without error
+  phy$edge.length <- rep(1,nrow(phy$edge))
+  phy <- ape::collapse.singles(phy)
+  phy$tip.label <- leaves.names[as.numeric(phy$tip.label)]
+  return(phy)
 }
 
-phylo_taxonomy <- function(otu, rank="order", rank.sep="; ", meta, factors, plot.type="phylogram", edge.width=1, cex=0.7, font = 1, x.lim = NULL, tip.offset=0, tip.cex=0.5, thermo=FALSE, thermo.horiz=TRUE, thermo.width=0.5, thermo.height=1, node.frame="r", node.bg="white", node.col="black", node.width=0.5, node.height=0.6, node.cex=0.6, node.font=1) {
+phylo_taxonomy <- function(otu, rank="order", rank.sep="; ", meta, factors, plot.type="phylogram", 
+                           edge.width=1, cex=0.7, font = 1, x.lim = NULL, tip.offset=0, tip.cex=0.5, 
+                           thermo=FALSE, thermo.horiz=TRUE, thermo.width=0.5, thermo.height=1, 
+                           node.frame="r", node.bg="white", node.col="black", node.width=0.5, 
+                           node.height=0.6, node.cex=0.6, node.font=1) {
   #if (!require("ape")) {
   #  stop("R packages RAM and ape are required for this function")
   #}
   valid.OTU(otu)
-  otu.tax<-gsub("Incertae sedis", "Incertae_sedis", x=otu$taxonomy, ignore.case=TRUE)
+  otu.tax <- gsub("Incertae sedis", "Incertae_sedis", x=otu$taxonomy, ignore.case=TRUE)
   otu$taxonomy <- otu.tax
   data <- tax.fill(otu, downstream=TRUE)
   data <- data[order(data$taxonomy), ]
   rank <- rank
   if (.get.rank(.get.rank.ind(rank)) == "species") {
-     last.rank=TRUE
+    last.rank=TRUE
   } else {
-     last.rank=FALSE
+    last.rank=FALSE
   }
-
+  
   all.tax.classes <- c("kingdom", "phylum", "class", "order", "family", "genus", "species")
   if ( !last.rank ) {
     rank.split <- paste0(rank.sep, .get.rank.pat(.get.rank(.get.rank.ind(rank)+1)))
     tax.classes <- c("taxonomy", "exclude")
     data.split <- col.splitup(data, col="taxonomy", sep=rank.split,  drop=TRUE, names=tax.classes)
-  data.split <- data.split[, -grep("exclude", names(data.split))]
+    data.split <- data.split[, -grep("exclude", names(data.split))]
   } else {
     data.split <- data
   }
   #head(data.split)
-
-  data.ag <- aggregate(data.split[, 1:(ncol(data.split)-1)], by=list(factor(data.split$taxonomy)), FUN=.sumcol)
+  
+  data.ag <- stats::aggregate(data.split[, 1:(ncol(data.split)-1)], by=list(factor(data.split$taxonomy)), FUN=.sumcol)
   names(data.ag)[1] <- "taxonomy"
   data.ag <- data.ag[, c(names(data.ag)[2:ncol(data.ag)], "taxonomy")]
   data.ag$taxonomy <- as.character(data.ag$taxonomy)
-
-## meta
+  
+  ## meta
   if ( !identical(colnames(data.ag)[1:(ncol(data.ag)-1)], rownames(meta) )) {
     stop("not same samples or not the same order in otu table and metadata")
   }
-
+  
   pie.list <- list()
   fac.lev <- list()
   for ( i in 1:length(factors) ) {
-      fac <- factors[i]
-      if ( length(which(is.na(meta[, factors[i]]))) != 0 ) {
-        warning(paste("missing data in ", factors[i], ", the plot may not be completed; consider remove this variable!", sep=""))
-      } 
-      if ( is.numeric(meta[, fac]) ) {
-        stop("factors must be category data")
-      } else {
-         meta[, fac] <- as.character(meta[, fac])
-      }
-      fac.lev[[factors[i]]] <- length(levels(factor(meta[, fac])))
-      temp<-RAM::transpose.OTU(data.ag)
-      meta.ag <- aggregate(temp, by=list(meta[, fac]), FUN=.sumcol)
-      rownames(meta.ag) <- meta.ag[,1]
-      meta.ag<-meta.ag[,-1]
-      meta.ag.t <- as.data.frame(t(meta.ag))
-      pie <- as.matrix(decostand(meta.ag.t, "total", 1))
-      pie <- cbind(pie, rowSums(meta.ag.t))
-      colnames(pie)[ncol(pie)] <- "Seq_count"
-      pie.list[[factors[i]]] <- pie
+    fac <- factors[i]
+    if ( length(which(is.na(meta[, factors[i]]))) != 0 ) {
+      warning(paste("missing data in ", factors[i], ", the plot may not be completed; consider remove this variable!", sep=""))
+    } 
+    if ( is.numeric(meta[, fac]) ) {
+      stop("factors must be category data")
+    } else {
+      meta[, fac] <- as.character(meta[, fac])
+    }
+    fac.lev[[factors[i]]] <- length(levels(factor(meta[, fac])))
+    temp <- RAM::transpose.OTU(data.ag)
+    meta.ag <- stats::aggregate(temp, by=list(meta[, fac]), FUN=.sumcol)
+    rownames(meta.ag) <- meta.ag[,1]
+    meta.ag <- meta.ag[,-1]
+    meta.ag.t <- as.data.frame(t(meta.ag))
+    pie <- as.matrix(vegan::decostand(meta.ag.t, "total", 1))
+    pie <- cbind(pie, rowSums(meta.ag.t))
+    colnames(pie)[ncol(pie)] <- "Seq_count"
+    pie.list[[factors[i]]] <- pie
   } 
-
+  
   
   sel <- which(all.tax.classes == .get.rank(.get.rank.ind(rank)))
   sel.tax.classes <- all.tax.classes[1:sel]
   data.ag.split <- col.splitup(data.ag, col="taxonomy", sep=rank.sep,  drop=TRUE, names=sel.tax.classes)
   #head(data.ag.split)
-
   
-  t1<-.as.phylo.formula_SL(as.formula(paste0("~", paste(sel.tax.classes, collapse="/"))), data=data.ag.split)
+  
+  t1 <- .as.phylo.formula_SL(as.formula(paste0("~", paste(sel.tax.classes, collapse="/"))), data=data.ag.split)
   t1$tip.label
   t1$node.label
   t1$edge
@@ -133,7 +141,7 @@ phylo_taxonomy <- function(otu, rank="order", rank.sep="; ", meta, factors, plot
   
   # plot the tree
   plot(t1, type=plot.type, edge.width=edge.width, cex=cex, font = font, label.offset = tip.offset, x.lim = x.lim, no.margin = FALSE)
-
+  
   if (!requireNamespace("RColorBrewer")) {
     stop("R package RColorBrewer is required for this function")
   }
@@ -154,19 +162,24 @@ phylo_taxonomy <- function(otu, rank="order", rank.sep="; ", meta, factors, plot
   }
   
   
-#tiplabels(pch = 21, bg = gray(pie[,3]/sum(pie[,3])), cex = 2, adj = 1.4)
-#tiplabels(pch = 19, col = c("yellow", "red", "blue"), adj = 2.5, cex = 2)
+  #tiplabels(pch = 21, bg = gray(pie[,3]/sum(pie[,3])), cex = 2, adj = 1.4)
+  #tiplabels(pch = 19, col = c("yellow", "red", "blue"), adj = 2.5, cex = 2)
   for ( i in 1:length(factors) ) {
     if ( !thermo ) {
-      tiplabels(piecol=col.list[[i]], pie=pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], bg = "white", cex = tip.cex, adj = 0+ (i-1)*0.15,  label.offset = tip.offset, no.margin=TRUE)
-     } else {
-   #     tiplabels(piecol=col.list[[i]], thermo = pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], bg = "white", cex = tip.cex, adj = 0+ (i-1)*0.5, width=thermo.width, height=thermo.height, horiz=thermo.horiz, label.offset = tip.offset, x.lim = x.lim, no.margin=TRUE)
-   tiplabels(piecol=col.list[[i]], thermo = pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], bg = "white", cex = tip.cex, adj = 1, width=thermo.width, height=thermo.height, horiz=thermo.horiz, label.offset = tip.offset, x.lim = x.lim, no.margin=TRUE)
-     }
+      ape::tiplabels(piecol=col.list[[i]], pie=pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], bg = "white", 
+                     cex = tip.cex, adj = 0+ (i-1)*0.15,  label.offset = tip.offset, no.margin=TRUE)
+    } else {
+      #     tiplabels(piecol=col.list[[i]], thermo = pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], 
+      #     bg = "white", cex = tip.cex, adj = 0+ (i-1)*0.5, width=thermo.width, height=thermo.height, 
+      #     horiz=thermo.horiz, label.offset = tip.offset, x.lim = x.lim, no.margin=TRUE)
+      ape::tiplabels(piecol=col.list[[i]], thermo = pie.list[[i]][,1:(ncol(pie.list[[i]])-1)], bg = "white", 
+                     cex = tip.cex, adj = 1, width=thermo.width, height=thermo.height, horiz=thermo.horiz, 
+                     label.offset = tip.offset, x.lim = x.lim, no.margin=TRUE)
+    }
   }
-
+  
   #nodelabels()
-
+  
   for (i in 1:length(t1$tip.label)) { 
     #tip.v<-c(tip.v, i); 
     tax.tip <- unlist(strsplit(t1$tip.label[i], ":"))[1]
@@ -178,17 +191,18 @@ phylo_taxonomy <- function(otu, rank="order", rank.sep="; ", meta, factors, plot
       } else {
         tax.split <- rev(tax.split[1:(length(tax.split))])
       }
-      a<- phangorn::Ancestors(t1, i, type=c("all")); 
-      dis <- dist.nodes(t1)[i, c(i, a)]
+      a <- phangorn::Ancestors(t1, i, type=c("all")); 
+      dis <- ape::dist.nodes(t1)[i, c(i, a)]
       #if (length(a) == length(tax.split)) {
       for ( j in 1:length(a) ) {
-         #if ( (dis[j+1]-dis[j]) >1 ) {
-         #  inter <- dis[j+1] - dis[j] -1
-         #  inter.tax <- tax.split[(dis[j]+1):(dis[j+1]-1)]
-           #edgelabels ( tax.split[dis[j+1]]
-           
-         #print(paste(tax.split[dis[j+1]], a[j], sep="   "))
-         nodelabels(tax.split[dis[j+1]], a[j], frame=node.frame, bg=node.bg, col=node.col, width=node.width, height=node.height, cex=node.cex, font=node.font)        
+        #if ( (dis[j+1]-dis[j]) >1 ) {
+        #  inter <- dis[j+1] - dis[j] -1
+        #  inter.tax <- tax.split[(dis[j]+1):(dis[j+1]-1)]
+        #edgelabels ( tax.split[dis[j+1]]
+        
+        #print(paste(tax.split[dis[j+1]], a[j], sep="   "))
+        ape::nodelabels(tax.split[dis[j+1]], a[j], frame=node.frame, bg=node.bg, col=node.col, 
+                        width=node.width, height=node.height, cex=node.cex, font=node.font)        
       }
     }
   }

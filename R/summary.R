@@ -573,7 +573,7 @@ group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
   # vegan
   V1 = se = NULL
   .valid.meta(otu1=otu, meta=meta)
-  .valid.factors(meta, factor)
+  .valid.factor(meta, factor)
   m <- meta
   m$rn <- rownames(m)
   m <- m[, c("rn", factor)]
@@ -633,12 +633,13 @@ group.rich <- function(otu, meta, factor, file=NULL, ext=NULL,
   xlab <- colnames(pool.melt.split.cast)[1]
   ylab <- "richness"
   
+
   specpool.plot <- ggplot2::ggplot(pool.melt.split.cast, 
                           aes_string(x=x, y=y, fill=fill)) + 
     geom_bar(stat="identity",position=dodge) +  
     geom_errorbar(aes(ymin=V1-se, ymax=V1+se), 
                   position = dodge, size = 0.5, 
-                  shape = 1, width = 0.1) + 
+                  linetype = 1, width = 0.1) + 
     scale_fill_brewer(legend, type = "div" , 
                       palette = "Set3" ) +  
     xlab(xlab) + ylab(ylab)
