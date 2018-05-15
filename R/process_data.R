@@ -392,8 +392,11 @@ match.data <- function(data, is.OTU=TRUE, meta) {
     elems[[label]] <- elem
     # otus
     if ( is.OTU ) {
+       elem <- elem[rowSums(elem[, -ncol(elem)])>0,    
+                    colSums(elem[, -ncol(elem)]) >0]
        samples.elem <- colnames(elem)[-ncol(elem)]
     } else {
+       elem <- elem[rowSums(elem)>0, colSums(elem) >0]
        samples.elem <- rownames(elem)
     }
     samples[[label]] <- samples.elem
@@ -401,11 +404,12 @@ match.data <- function(data, is.OTU=TRUE, meta) {
   
   # samples exist in all data and metadata
   samples.all <- Reduce(intersect, samples)
-  
+  print (paste(length(samples.all), " samples exist in otus and metadata!", sep=""))
+
   # new metadata
   sel <- which(samples[["meta"]] %in% samples.all)
   meta.new <- meta[sel, ]
-       
+    
   # new data
   elems.new <- list()
   for ( i in 1:length(elems) ) {
@@ -420,10 +424,11 @@ match.data <- function(data, is.OTU=TRUE, meta) {
                                      -ncol(elem.new)])>0,    
                           colSums(elem.new[, 
                                      -ncol(elem.new)]) >0]
+      #return(elem.new)
       if ( identical(to_match, colnames(elem.new)) ) {
         elems.new[[label]] <- elem.new
       } else {
-        stop("couldn't match samples in data and metadata, please check your datasets")
+        stop(paste("couldn't match samples in ", label, " and metadata, please make sure your input is otu table", sep=""))
       } 
     } else {
       to_match <- rownames(meta.new)
@@ -434,7 +439,7 @@ match.data <- function(data, is.OTU=TRUE, meta) {
       if ( identical(to_match, rownames(elem.new)) ) {
         elems.new[[label]] <- elem.new
       } else {
-        stop("couldn't match samples in data and metadata, please check your datasets")
+        stop(paste("couldn't match samples in ", label, " and metadata, please make sure your input is a taxonomy abundance table", sep=""))
       } 
     }
   }

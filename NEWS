@@ -2,6 +2,100 @@
 \title{RAM News}
 \encoding{UTF-8}
 
+\section{Changes in version 1.2.1.7}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item group.OTU: sort the OTUs by relative abundance.
+     \item match.data: fixed some typos.
+
+    }
+  } % bug fixes
+} % version 1.2.1.7
+
+
+
+\section{Changes in version 1.2.1.6}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item group.top.number: fixed a bug when selecting the taxa.
+     \item network_data: fixed man page.
+
+    }
+  } % bug fixes
+} % version 1.2.1.6
+
+
+\section{Changes in version 1.2.1.5}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item OTU.ord: fixed a bug when using cca.
+   
+      \item valid.taxonomy: fixed a bug in this function
+
+    }
+  } % bug fixes
+} % version 1.2.1.5
+
+
+\section{Changes in version 1.2.1.4}{
+
+   \subsection{GENERAL}{
+     \itemize{
+
+       \item This is a release that we fixed some bugs.
+
+     }
+  } % general
+
+
+  \subsection{BUG FIXES}{
+
+    \itemize{
+
+     \item .ggsave.helper: fixed this internal function  due to the 
+change of behaviour of ggsave..
+
+    }
+  } % bug fixes
+} % version 1.2.1.4
+
+
 \section{Changes in version 1.2.1.3}{
 
    \subsection{GENERAL}{

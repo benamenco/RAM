@@ -550,9 +550,12 @@ group.OTU <- function(otu, rank="g", otuIDs="", meta,
   
   #return(list(otu.sel.fac.m, otu.p.sel.fac.m, total.count))
   
+  # merge total.count and otu.p.sel.fac.m
+  otu.p.sel.fac.m.m <- merge(otu.p.sel.fac.m, total.count[, c("OTU", "total")], by="OTU", all=TRUE)
+
   # reorder levels based on order of appearance in total.count, 
-  otu.p.sel.fac.m$OTU <- factor(as.character(otu.p.sel.fac.m$OTU), 
-                                levels=total.count$OTU, ordered=TRUE)
+  #otu.p.sel.fac.m$OTU <- factor(as.character(otu.p.sel.fac.m$OTU), 
+  #                              levels=total.count$OTU, ordered=TRUE)
   
   # we need to use aes_string to pass CRAN check; see 
   # http://goo.gl/JxgZ9u
@@ -570,6 +573,33 @@ group.OTU <- function(otu, rank="g", otuIDs="", meta,
   }
   
   ylab <- "Relative Abundance (%)"
+
+  # sort by meta.fac and RA
+  aa<-otu.p.sel.fac.m.m
+  #return(aa)
+  #aa<-aa[order(aa[, meta.factor], aa[, "RA"]),]
+  #aa<-aa[order(aa[, meta.factor], aa[, "RA"], decreasing=TRUE),]
+  aa<-aa[order(aa[, meta.factor], aa[, "RA"], decreasing=FALSE),]
+  # sort each meta.factor level by RA
+  #for ( i in levels(aa[, meta.factor])) {
+  #  bb <-aa[aa[, meta.factor]==i, ]
+    #bb <- bb[order(bb[, "RA"], decreasing=TRUE),]
+  #  bb <- bb[order(bb[, "RA"]),]
+  #  aa[aa[, meta.factor]==i, ] <- bb
+  #}
+  #return(aa)
+  # re-order meta.factor levels
+  #aa[, meta.factor] <- factor(as.character(aa[, meta.factor] ), 
+ #                             levels= unique(sort(aa[, meta.factor], 
+  #                            decreasing=FALSE)), ordered=TRUE)
+  #Turn your 'OTU' column into a character vector
+  #aa$OTU <- as.character(aa$OTU)
+  #Then turn it back into an ordered factor
+  #aa$OTU <- factor(aa$OTU, levels=unique(aa$OTU), ordered=TRUE)
+  otu.p.sel.fac.m <-aa
+  otu.p.sel.fac.m$OTU <- factor(as.character(otu.p.sel.fac.m$OTU), 
+                                levels= unique(otu.p.sel.fac.m$OTU), ordered=TRUE)
+  #return(otu.p.sel.fac.m)
   
   if(boxplot) {
     
@@ -590,8 +620,8 @@ group.OTU <- function(otu, rank="g", otuIDs="", meta,
     p <- p + scale_fill_manual(values=RAM.pal(cols.needed))  
   } 
   
-  p <- p + scale_x_discrete(labels = paste(total.count$otu, "\n", 
-                                           total.count$tax,":",total.count$total, sep="")) + 
+  p <- p + scale_x_discrete(labels = paste(otu.p.sel.fac.m$otu, "\n", 
+                                           otu.p.sel.fac.m$tax,":",otu.p.sel.fac.m$total, sep="")) + 
     theme(legend.key.size=unit(6,"mm"),
           legend.text = element_text(size=10), 
           axis.text.y=element_text(size=7),

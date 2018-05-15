@@ -79,7 +79,7 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
   } else {
      factors1 <- .valid.factor(meta, factors)
   }
-  meta.new <- meta[, which(names(meta) %in% factors1)]
+  meta.new <- meta[, which(names(meta) %in% factors1), drop=FALSE]
   meta.new <- filter.META(meta=meta.new, excl.na=FALSE)
   
   # return(meta.new)
@@ -191,6 +191,7 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
  # I have problem using anova to test significance of factors
  # so I'll just plot all.
 
+  #return(list(score=score, OTU=OTU))
  bp.score.sel <- bp.score
  # species/sites/centroids scores
  species.score <- as.data.frame(score$species)
@@ -211,15 +212,18 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
  
  ### Plot OTUs ###
  meta <- meta[match(rownames(meta.new), rownames(meta)), ]
-
+  
  # plot levels
  if( plot.species ) {
     df <- as.data.frame(species.score)
-    df <- df[match(rownames(OTU), rownames(df)),]
-    if ( identical(rownames(df), rownames(OTU)) ) {
-       df[[rank_name]]<-OTU[[rank_name]]
-    } else {
-       stop(" not same otuIDs in rda output and OTU table provided")
+    #df <- df[match(rownames(OTU), rownames(df)),]
+    #if ( identical(rownames(df), rownames(OTU)) ) {
+    #   df[[rank_name]]<-OTU[[rank_name]]
+    #} else {
+    #   stop(" not same otuIDs in rda output and OTU table provided")
+    #}
+    for ( l in rownames(df)) {
+      df[l, rank_name] <- OTU[l, rank_name]
     }
  } else if ( !plot.species & !(is.null(group)) ) {
     .valid.factor(meta, group)
@@ -246,6 +250,8 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
  } else {
     warning("No levels to plot, provide one group")
  }
+
+  #return(df)
  
  #if ( require("grid") ) {
  #  grid::arrow
@@ -346,7 +352,8 @@ OTU.ord <- function(otu, meta=meta, factors=NULL, group=NULL,
  p<-p+ geom_segment(data=bp.score.sel, 
        aes_string(x=0,xend=x.string,y=0,yend=y.string), 
            arrow = arrow(length = unit(0.3, "cm")), 
-              colour="grey",inherit_aes=FALSE) 
+              colour="grey")
+  #,inherit_aes=FALSE) 
  p <- p + geom_text(data = bp.score.sel, aes_string(x= x.string, 
           y = y.string, label ="label"), size = cex.bp,  hjust = 0.5) + 
           theme_bw() +
@@ -811,7 +818,8 @@ Taxa.ord <- function(data, is.OTU=TRUE, meta=meta, factors=NULL,
  p<-p+ geom_segment(data=bp.score.sel, 
        aes_string(x=0,xend=x.string,y=0,yend=y.string), 
            arrow = arrow(length = unit(0.3, "cm")), 
-              colour="grey",inherit_aes=FALSE) 
+              colour="grey")
+  #inherit_aes=FALSE) 
  p <- p + geom_text(data = bp.score.sel, aes_string(x= x.string, 
           y = y.string, label ="label"), size = cex.bp,  hjust = 0.5) + 
           theme_bw() +

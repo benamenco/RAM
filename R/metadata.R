@@ -5,6 +5,8 @@ correlation<-function(data=NULL, is.OTU=TRUE, meta=NULL, rank="g",
   
   save <- !is.null(file)
   if (save) { .get.dev(file, ext, height=height, width=width) }
+
+  #if (!require("lattice")) install.packages("lattice") 
   
   # make sure either data or metadata was provided
   if ( is.null(data) & is.null(meta) ) {
@@ -248,6 +250,9 @@ sample.map <- function(meta, siteID="City", maptype="roadmap",
   #if ( !require("gtable") ) {
   if(!requireNamespace('gtable')) {
     stop("package 'gtable' is required for this function")
+  }
+  if(!requireNamespace('lattice')) {
+    stop("package 'lattice' is required for this function")
   }
   
   #if ( !require("ggmap") ) {

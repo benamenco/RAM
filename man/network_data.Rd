@@ -46,30 +46,39 @@ Wen Chen
 data(ITS1, meta)
 \dontrun{
 ITS1.01<-filter.OTU(data=list(ITS1=ITS1), percent=0.01)[[1]]
+
 # create nodes and edges lists
 b<-network_data(ITS1.01, is.OTU=TRUE, meta)
 b_node<-b[[1]]
 b_edge<-b[[2]]
 head(b_node)
 head(b_edge)
+
 library(igraph)
-b1<-graph.data.frame(b_edge, directed=F)
+b1<-graph.data.frame(b_edge, directed=FALSE)
 lev <- levels(factor(E(b1)$Crop))
+
 # vertices size
 V(b1)$size<-degree(b1)
+
 # vertices color
 Crop1<-rownames(meta)[meta$Crop=="Crop1"]
 Crop2<-rownames(meta)[meta$Crop=="Crop2"]
+
 ## vertices representing samples from crop1 will be in red,
 ## vertices representing samples from crop2 will be in blue;
 ## vertices representing taxa will be in pink
-V(b1)$color<-ifelse((V(b1)$name %in% Crop1), 'red',
-              ifelse((V(b1)$name %in% Crop2), "blue", "pink"))
+V(b1)$color[which(is.element(V(b1)$name, Crop1))]<-"red"
+V(b1)$color[which(is.element(V(b1)$name, Crop2))]<-"blue"
+V(b1)$color[-which(is.element(V(b1)$name, c(Crop1, Crop2)))]<-"pink"
+V(b1)$color
+
 # edges color
 col<-c("red", "blue")
 for (i in 1:length(lev) ) { 
   E(b1)$color[E(b1)$Crop==lev[i]] <- col[i]
 }
+
 # plot
 plot(b1, vertex.label.font=2,
          vertex.label.cex=0.5,

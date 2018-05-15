@@ -17,22 +17,22 @@ valid.taxonomy <- function(data) {
     # otherwise, gsub wouldn't work
     otu$taxonomy <- as.character(otu$taxonomy)
     alert <- vector()
-    for ( i in 1:nrow(otu) ) {
+    for ( j in 1:nrow(otu) ) {
        # remove the ; at the end of the lineage
-       if ( grepl(";[ ]+$", otu[i,"taxonomy"], perl=TRUE) ) {         
-           otu[i,"taxonomy"] <- gsub(";[ ]+$", "", otu[i,"taxonomy"], 
+       if ( grepl(";[ ]+$", otu[j,"taxonomy"], perl=TRUE) ) {         
+           otu[j,"taxonomy"] <- gsub(";[ ]+$", "", otu[j,"taxonomy"], 
                                    perl=TRUE)
-       } else if ( grepl("[;]+$", otu[i,"taxonomy"], perl=TRUE) ) { 
-          otu[i,"taxonomy"] <- gsub("[;]+$", "", otu[i,"taxonomy"], 
+       } else if ( grepl("[;]+$", otu[j,"taxonomy"], perl=TRUE) ) { 
+          otu[j,"taxonomy"] <- gsub("[;]+$", "", otu[i,"taxonomy"], 
                                        perl=TRUE)
        } else {
-           otu[i,"taxonomy"] <- otu[i,"taxonomy"]
+           otu[j,"taxonomy"] <- otu[j,"taxonomy"]
        }
         # now check # of '; ' and ';'
       count1 <- sapply(regmatches("; ", gregexpr("; ", 
-                          otu[i,"taxonomy"])), length) 
+                          otu[j,"taxonomy"])), length) 
       count2 <- sapply(regmatches(";", gregexpr(";", 
-                          otu[i,"taxonomy"])), length)
+                          otu[j,"taxonomy"])), length)
       if ( count1 == 0 && count2 ==0 ) {
          # only kingdom information avaiable 
          # otuID  k__fungi
@@ -47,23 +47,27 @@ valid.taxonomy <- function(data) {
       }
       miss_pre <- vector()
       miss_rk <- vector()
-      for ( j in prefix ) {
-         if ( !grepl(j, otu[i,"taxonomy"]) ) {
-              miss_pre <- c(miss_pre, j)
-              miss_rk <- c(miss_rk, .get.rank.name(j))
+      for ( l in prefix ) {
+         if ( !grepl(l, otu[j,"taxonomy"]) ) {
+              miss_pre <- c(miss_pre, l)
+              miss_rk <- c(miss_rk, .get.rank.name(l))
            }
        }
        if ( length(miss_pre) != 0 ) {
          alert<- c(alert, paste("missing prefix or missing taxonomy ranks in the lineages; 1) if missing prefix, consider reformatting the taxonomy; 2) if missing ranks only, it's probably ok" ))
+       } else {
+         next;
        }
      }
      len <- unique(alert)
      alert <- paste(unique(alert), collapse="\n")
-     if ( len != 0 ) {
+
+     if ( len == 0 || length(len) == 0 ) {
+        warning("Format of the taxonomy column is good")
+     } else {
         y <- "Consider reformatting the OTU table's taxonomy, check ?RAM::reformat.taxonomy"
         warning(paste0(paste("For ", label, ": ", sep=""), alert, "\n", y, sep="; "))
-     }
- 
+     }  
    }
 }
 
@@ -464,9 +468,11 @@ tax.fill <- function(data, downstream=TRUE) {
   
   if (downstream) {
     range <- 1:7
-    belong <- "belongs_to_"
+    #belong <- "belongs_to_"
+    belong <- "_sp."
   } else {
     range <- 7:1
+    #belong <- "classified_to_"
     belong <- "classified_to_"
   }
   
@@ -496,9 +502,13 @@ tax.fill <- function(data, downstream=TRUE) {
       
       # if we need to replace the classification, use last good name
       if (replace[j]) {
-    
-          new.name <- paste0(.get.rank.pat(.get.rank(i)), belong,
-           gsub("__", "_", classified.names[j]))
+          if (downstream) {
+              new.name <- paste0(.get.rank.pat(.get.rank(i)), 
+                        gsub("[kpcofgs]__", "", classified.names[j], perl=TRUE), belong)
+          } else {
+             new.name <- paste0(.get.rank.pat(.get.rank(i)), belong,
+             gsub("__", "_", classified.names[j]))
+          }
     
           new.taxonomy[[j]][i] <- new.name
       } else { # if the classification is good, store it
@@ -540,7 +550,7 @@ LCA.OTU <- function(otu, strip.format=FALSE, drop=TRUE) {
 
 # remove entries matched blacklist (unclassified taxa)
   otu.split[ ,-(1:max)] <- gsub(blacklist, "", 
-        as.matrix(otu.split[ ,-(1:max)]))
+        as.matrix(otu.split[ ,-(1:max)]), ignore.case = TRUE)
 
   otu.split[ ,-(1:max)] <- gsub("^[ ]+", "", 
        as.matrix(otu.split[ ,-(1:max)]), perl=TRUE)

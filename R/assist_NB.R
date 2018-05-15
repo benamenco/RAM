@@ -439,10 +439,10 @@ will be used as x axis for plotting; ", "will ignore x=", x, sep=""))
   if ( plot == "x_fac" ) {
     if ( is.null(fill) ) {
          p <- ggplot(df2, aes_string(x=x, y=taxon)) + 
-              geom_boxplot(postition="dodge") 
+              geom_boxplot(position="dodge") 
     } else {
          p <- ggplot(df2, aes_string(x=x, y=taxon, col=fill)) +
-              geom_boxplot(postition="dodge", 
+              geom_boxplot(position="dodge", 
                            outlier.colour = "black", 
                            outlier.shape = 16, 
                            outlier.size = 6, 

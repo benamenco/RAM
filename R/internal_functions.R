@@ -301,7 +301,7 @@
   
   file <- .ensure.filepath(file, ext)
   
-  ggsave.args <- list(filename=file, width=width, height=height, plot=plot,
+  ggsave.args <- list(filename=file, device=ext, width=width, height=height, plot=plot,
                       units="in", dpi=1000)
   
   if (ext == "tiff") {
@@ -310,7 +310,7 @@
   
  # it does not work because ggsave wants an object of class ggplot, while you're passing a grob. arrangeGrob will sometimes trick ggsave in pretending inheritance from ggplot, but only when at least one of the grobs belongs to this class; here, however, you're only passing a gtable. Perhaps the easiest workaround is to clone ggsave and bypass the class check,
 
-  ggsave <- ggplot2::ggsave; body(ggsave) <- body(ggplot2::ggsave)[-2]
+  ggsave <- ggplot2::ggsave; #body(ggsave) <- body(ggplot2::ggsave)[-2]
   do.call(ggsave, ggsave.args)
 }
 
@@ -319,7 +319,7 @@
 .blacklist <- function(rank = NULL) {
   
   blacklist <- c("unclassified", "unidentified", "incertae_sedis", 
-                 "incertae sedis", "unassignable")
+                 "incertae sedis", "unassignable", "unknown")
     
   # example: if we "phylum" as the rank, we want to add "p__;" to the blacklist
   if (!is.null(rank)) {

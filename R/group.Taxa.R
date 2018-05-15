@@ -77,7 +77,7 @@ group.Taxa.box <- function(data, is.OTU=TRUE, rank="g",
   } else {
     all.nocap <- Reduce(intersect, nocap.list)
     if ( length(all.nocap) != 0 ) {
-       warning(paste(length(nocap), " taxa are not in all datasets: ", paste(all.nocap, collapse=", "), sep=""))
+       warning(paste(length(all.nocap), " taxa are not in all datasets: ", paste(all.nocap, collapse=", "), sep=""))
        rm <- which(taxa %in% all.nocap)
        # remaining taxa list
        taxa <- taxa[-rm]
@@ -213,12 +213,28 @@ group.Taxa.box <- function(data, is.OTU=TRUE, rank="g",
       lab.lst[[i]] <- paste(i, "(", lab1, ")", sep="")
   }
   lab2 <- unlist(lab.lst)
-  
- # boxplot 
- p <- ggplot2::ggplot(all.taxa, aes_string(x=rank_name,
-            y="RA",fill=meta.factor)) + 
-           geom_boxplot() 
 
+ #return(all.taxa)
+
+  bb<-list()
+  for ( l in levels(factor(all.taxa[, "Region"])) ) {
+    aa <- all.taxa[all.taxa$Region==l,]
+    for ( k in levels(factor(aa[, meta.factor])) ) {
+      cc <- aa[aa[, meta.factor]==k, ]
+      bymedian<- reorder(cc[, rank_name], -cc[, "RA"], median)
+      bb[[paste0(l,".",k)]]<-levels(bymedian)
+    }
+  }
+  by_median<-bb[[1]]
+  #return(all.taxa)
+  all.taxa[,rank_name] <- factor(as.character(all.taxa[, rank_name]), levels= by_median, ordered=TRUE)
+  #return(all.taxa)
+
+ # boxplot 
+ p <- ggplot2::ggplot(all.taxa, aes_string(x=rank_name,        
+          y="RA",fill=meta.factor)) + 
+           geom_boxplot() 
+  
   # facet by region 
   p <- p + scale_x_discrete(labels = lab2) + 
            facet_wrap(~Region) 
@@ -234,11 +250,9 @@ group.Taxa.box <- function(data, is.OTU=TRUE, rank="g",
   if ( is.null(RAM.theme) ) {     
      p <- p + theme(legend.key.size=unit(6,"mm"), 
               legend.text = element_text(size=10),
-              axis.text.y=element_text(size=cex.y, face="bold"),
+              axis.text.y=element_text(size=cex.y, face="bold", margin=margin(5,5,10,5,"pt")),
               axis.text.x=element_text(size=cex.x, face="bold"),
-              #axis.ticks.length=grid::unit(-0.1, "cm"), 
-              #axis.ticks.margin=grid::unit(0.5, "cm"),
-              axis.ticks.y=element_line(size=1),
+              #axis.ticks.y=element_line(size=1),
               legend.position="right",
               plot.title = element_text(face="bold", size=cex.main))
   } else {
@@ -329,7 +343,7 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
   } else {
     all.nocap <- Reduce(intersect, nocap.list)
     if ( length(all.nocap) != 0 ) {
-       warning(paste(length(nocap), " taxa are not in all datasets: ", paste(all.nocap, collapse=", "), sep=""))
+       warning(paste(length(all.nocap), " taxa are not in all datasets: ", paste(all.nocap, collapse=", "), sep=""))
        rm <- which(taxa %in% all.nocap)
        taxa <- taxa[-rm]
     } else {
@@ -359,10 +373,13 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
     tax.sel <- df
 
     tax.sel.fac <- stats::aggregate(tax.sel, by=list(meta[[meta.factor]]), FUN=func)
+    tax.sel.fac.total <- stats::aggregate(tax.sel, by=list(meta[[meta.factor]]), FUN=sum)
    
+    ###############################
+    # based on required calculation
+    ###############################
     rownames(tax.sel.fac) <- tax.sel.fac$Group.1
     tax.sel.fac<-as.data.frame(tax.sel.fac[,-1, drop=FALSE])
-
     # reshape2::melt by factor
     #if (!require("reshape2")) {
     #   stop("package 'reshape2' is required to use this function")
@@ -379,19 +396,37 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
     # bind together with appropriate label
     tax.sel.fac.m <- cbind(tax.sel.fac.m, Region=label)
  
+    ####################################
     #calculate total count of each Taxon
-    total= sapply(levels(tax.sel.fac.m[[rank_name]]), 
-           function(x){sum(tax.sel.fac.m$count[tax.sel.fac.m[[rank_name]]==x])}, 
+    ####################################
+    # based on required calculation
+    rownames(tax.sel.fac.total) <- tax.sel.fac.total$Group.1
+    tax.sel.fac.total<-as.data.frame(tax.sel.fac.total[,-1, drop=FALSE])
+    # reshape2::melt by factor
+    #if (!require("reshape2")) {
+    #   stop("package 'reshape2' is required to use this function")
+    #}
+    tax.sel.fac.total.m<-reshape2::melt(cbind(tax.sel.fac.total, 
+                       factor=rownames(tax.sel.fac.total)), 
+                       is.vars=c('factor'), value.name="count", 
+                       variable.name=rank_name)
+    
+    names(tax.sel.fac.total.m)[ncol(tax.sel.fac.total.m)-1] <- rank_name
+    names(tax.sel.fac.total.m)[ncol(tax.sel.fac.total.m)] <- "count"
+    names(tax.sel.fac.total.m)[names(tax.sel.fac.total.m)=="factor"] <- meta.factor  
+    # bind together with appropriate label
+    tax.sel.fac.total.m <- cbind(tax.sel.fac.total.m, Region=label) 
+    total= sapply(levels(tax.sel.fac.total.m[[rank_name]]), 
+           function(x){sum(tax.sel.fac.total.m$count[tax.sel.fac.total.m[[rank_name]]==x])}, 
            USE.NAMES=F)
-    total.df<-data.frame(Taxon=levels(tax.sel.fac.m[[rank_name]]),total)
-
+    total.df<-data.frame(Taxon=levels(tax.sel.fac.total.m[[rank_name]]),total)
     names(total.df)[1] <- rank_name
     total.df[["Region"]] <- label
 
     # reorder levels based on order of appearance in total.count, 
-    tax.sel.fac.m[[rank_name]] <- factor(as.character(tax.sel.fac.m[[rank_name]]),
-                              levels=total.df[[rank_name]], 
-                              ordered=TRUE)
+    #tax.sel.fac.m[[rank_name]] <- factor(as.character(tax.sel.fac.m[[rank_name]]),
+    #                          levels=total.df[[rank_name]], 
+    #                          ordered=TRUE)
       
     # bind together with appropriate label
     total.count[[label]] <- total.df
@@ -400,6 +435,8 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
    
   all.taxa  <-  do.call("rbind", taxa.m)
   all.count  <-  do.call("rbind", total.count)
+  #return(list(all.taxa, all.count))
+
 
   # reorder by total counts
   all.count$total <- round(all.count$total, digits=0)
@@ -441,7 +478,9 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
           sel <- which(total.count[[labels[j]]][[rank_name]]==i)
           #lab[[labels[j]]] <- paste(labels[j], ":", 
           #         total.count[[labels[j]]]$total[sel], sep="")
-          lab[[labels[j]]] <- round(total.count[[labels[j]]]$total[sel], digits=0)
+          #lab[[labels[j]]] <- round(total.count[[labels[j]]]$total[sel], digits=0)
+          # round up to next digit
+          lab[[labels[j]]] <- ceiling(total.count[[labels[j]]]$total[sel])
 
       }      
       #lab1 <- paste(unlist(lab), collapse="\n")
@@ -451,7 +490,33 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
   }
   lab2 <- unlist(lab.lst)
 
-  
+  # reorder by percentage for each taxon
+  # first add a column with total number for each taxon
+  # sort by Region, meta.fac and RA
+  #aa<-aa[order(aa[, "Region"], aa[, meta.factor], ceiling(aa[, "RA"]), decreasing=FALSE),]
+  #return(all.taxa)
+  bb<-list()
+  for ( l in levels(factor(all.taxa[, "Region"])) ) {
+    aa <- all.taxa[all.taxa$Region==l,]
+    aa <- transform(aa, Tot.Count = ave(aa[, "count"], aa[, rank_name],FUN = function(x)sum(x)))
+  # then compute the percentage:
+  # aa <- transform(aa, RA = 100 * count/Tot.Count)
+  # because some Tot.Count == 0, RA cannot be calculated
+    for ( k in 1:nrow(aa)) {
+      if (aa[k, "Tot.Count"] == 0 ) {
+        aa[k, "RA"] <- 0
+      } else {
+        aa[k, "RA"] <- 100 * aa[k, "count"]/aa[k, "Tot.Count"]
+      }
+    }
+    aa <- aa[order(aa[, meta.factor], aa[, "RA"], decreasing=FALSE),]
+    bb[[l]]<-aa
+    #all.taxa[all.taxa$Region==l,] <- aa
+  }
+  all.taxa<-do.call("rbind", bb)
+  #return(all.taxa)
+  all.taxa[,rank_name] <- factor(as.character(all.taxa[, rank_name]), levels= unique(all.taxa[, rank_name]), ordered=TRUE)
+  #return(otu.p.sel.fac.m)
  # barplot 
  if ( is.null(bar.width) ) {
     p <- ggplot2::ggplot(all.taxa, aes_string(x=rank_name,
@@ -464,6 +529,7 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
            geom_bar(width=bar.width, colour="white",stat="identity",
              position="fill")
  }
+ #return(p)
            
   # facet by region,   # flip x & y
   p <- p + scale_fill_manual(values=cols[names(cols) %in% 
@@ -479,11 +545,12 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
 
   if ( is.null(RAM.theme) ) {
     p <- p + theme(legend.key.size=unit(6,"mm"), 
+                   #axis.text=element_text(margin=margin(5,5,10,5,"pt")),
                    axis.text.y=element_text(size=cex.y, face="bold"),
                    axis.text.x=element_text(size=cex.x, face="bold"),
                    #axis.ticks.length=grid::unit(-0.25, "cm"), 
                    #axis.ticks.margin=grid::unit(0.5, "cm"),
-                   axis.ticks.y=element_line(size=0.5),
+                   #axis.ticks.y=element_line(size=0.5),
                    legend.position="right",
                    legend.text = element_text(size=10), 
                    plot.title = element_text(face="bold", size=cex.main),
@@ -492,9 +559,10 @@ group.Taxa.bar <- function(data, is.OTU=TRUE, rank="g", taxa="",
     p <- p + RAM.theme
   } 
 
-  .valid.plot.settings(file, ext)
+
   save <- !is.null(file)
   if (save) {
+    .valid.plot.settings(file, ext)
     .ggsave.helper(file, ext, width, height, plot=p)
   } else {
     p
@@ -630,9 +698,9 @@ group.abund.Taxa <- function(data, is.OTU=TRUE, rank="g", taxa,
     theme(legend.position="bottom") 
   
   
-  .valid.plot.settings(file, ext)
-  save <- !is.null(file)
+
   if (save) {
+    .valid.plot.settings(file, ext)
     .ggsave.helper(file, ext, width, height, plot=p)
   } else {
     p

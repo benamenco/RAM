@@ -89,6 +89,32 @@
 
   rows <- list()
 
+  ## obtain top taxa
+  tax.list <- list()
+  otu.list <- list()
+  tax.names <- vector()
+  for (j in ranks) {
+    # get the data, add region/rank information
+    .valid.rank(j)
+    rank <- .get.rank.name(j)
+    tax.names <- c(tax.names, .capitalize(rank))
+    tax_rank <- vector()
+    for ( i in 1:length(data) ) {
+      label <- names(data)[i]
+      OTU <- data[[i]]
+      if ( is.null(OTU) ) { break }
+      valid.OTU(OTU)
+      # get the number of samples
+      num.samples  <-  ncol(OTU) - 1
+      top.otus <- top.func(OTU, rank=rank)
+      tax_rank<-unique(c(tax_rank, names(top.otus)))
+          
+    }
+    tax.list[[j]] <- tax_rank
+   }
+#(tax.list$phylum)
+#return(tax.list)
+
   for ( i in 1:length(data) ) {
     label <- names(data)[i]
     OTU <- data[[i]]
@@ -100,16 +126,16 @@
     num.samples  <-  ncol(OTU) - 1
 
     tax.names <- vector()
-    
     for (j in ranks) {
       # get the data, add region/rank information
       .valid.rank(j)
       rank <- .get.rank.name(j)
       tax.names <- c(tax.names, .capitalize(rank))
-      top.otus <- top.func(OTU, rank=rank)
+      otus <- tax.abund(OTU, rank=j, count=FALSE, mode=mode,
+                            drop.unclassified=TRUE)  
+      top.otus <- otus[, names(otus) %in% tax.list[[j]]]
       top.otus <- cbind(top.otus, Region=rep(label, times=num.samples),
                         Rank=rep(.capitalize(rank), times=num.samples))
-      
       #top.otus[["Region"]] <- label
       #top.otus[["Rank"]] <- rank
           
@@ -122,7 +148,7 @@
   }
  
   data  <-  do.call(rbind, rows)
-  
+  #return(data)
   data$Rank <- factor(data$Rank,levels=tax.names, ordered=TRUE)
  
   # get a colour palette with colours for each OTU

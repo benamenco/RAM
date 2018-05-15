@@ -94,9 +94,10 @@ data(ITS1, ITS2, meta)
 \dontrun{
 # plot the relative abundance at the class level to the screen, 
 # drop unclassified taxa
+data=list(ITS1=ITS1, ITS2=ITS2)
 group.abundance.meta(data, top=10, rank="family", 
                     drop.unclassified=TRUE, meta=meta, 
-                    meta.factor=c("Year", "Crop", "City"))
+                    meta.factor=c("Crop", "City"))
 }
 }
 % Add one or more standard keywords, see file 'KEYWORDS' in the

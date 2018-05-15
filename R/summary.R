@@ -218,7 +218,7 @@ OTU.recap <- function(data, ranks=c("p", "c", "o", "f", "g"),
                                     sep="; ", drop=TRUE, names=tax.classes)
       
       
-      if ( (unique(rank_otu_ided_splitup[[rank]])) != "" ) {
+      if ( !all(rank_otu_ided_splitup[[rank]]== "") ) {
           # identified taxa at the rank  
           rank_otu_ided_splitup.rank <- cbind(rank_otu_ided[, 1:(col.ided-1)], 
                                            rank_otu_ided_splitup[[rank]])
